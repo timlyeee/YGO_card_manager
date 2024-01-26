@@ -1,0 +1,30 @@
+SELECT
+    c.code,
+    c.alias,
+    c.setcode,
+    c.type,
+    c.level,
+    c.attribute,
+    c.race,
+    c.attack,
+    c.defense,
+    c.lscale,
+    c.rscale,
+    c.link_marker,
+    p.name AS package_name,
+    l.name AS language_name,
+    i.quantity
+FROM
+    cards c
+JOIN
+    card_packages cp ON c.id = cp.card_id
+JOIN
+    packages p ON cp.package_id = p.id
+JOIN
+    card_languages cl ON c.id = cl.card_id
+JOIN
+    languages l ON cl.language_id = l.id
+JOIN
+    card_inventory i ON c.id = i.card_id AND cp.package_id = i.package_id AND cl.language_id = i.language_id
+WHERE
+    i.quantity IS NULL OR i.quantity <= 3;

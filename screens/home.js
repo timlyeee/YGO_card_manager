@@ -13,6 +13,8 @@ import AnimatedSearchBar from '../components/animated-search-bar';
 const DB_FILE_NAME = 'carddb.db';             // 数据库文件名
 const DB_DIR = FileSystem.documentDirectory;  // 数据库文件所在目录
 const DB_MY_CARD = 'mycard.db';  // 来源为mycard的数据库文件
+const localDBPath = `${FileSystem.documentDirectory}SQLite/mycard.db`;
+      
 const Home = () => {
   const [searchText, setSearchText] = useState('');
   const [myCardsOnly, setMyCardsOnly] = useState(false);
@@ -23,8 +25,9 @@ const Home = () => {
 
 
   useEffect(() => {
-    initDatabase();
-    initMyCardDatabase().then(fetchMyCardTables).then(fetchMyCardData);
+    // initDatabase();
+    listFilesRecursively(FileSystem.documentDirectory+'SQLite').then((files)=>console.log('Files', files));
+    initMyCardDatabase().then(fetchMyCardTables);
     
     // fetchMyCardTables();
     // fetchCardData();
@@ -45,22 +48,29 @@ const Home = () => {
   });
   const initMyCardDatabase = async () => {
     try {
-      const localDBPath = `${FileSystem.documentDirectory}mycard.db`;
       console.log(Asset.fromModule(require('../assets/mycard.db')).uri);
-      await FileSystem.deleteAsync(localDBPath);
-    
+
+      // await FileSystem.deleteAsync(localDBPath); // if failed, this will block copy
+      if (!(await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'SQLite')).exists) {
+        await FileSystem.makeDirectoryAsync(FileSystem.documentDirectory + 'SQLite');
+        console.log("make directory success");
+      }
+      if((await FileSystem.getInfoAsync(localDBPath)).exists){
+        await FileSystem.deleteAsync(localDBPath); // if failed, this will block copy
+      }
+      
       await FileSystem.downloadAsync(
         Asset.fromModule(require('../assets/mycard.db')).uri,
         localDBPath
       );
 
       const sandboxDbFileInfo = await FileSystem.getInfoAsync(localDBPath);
+      console.log("file size"+sandboxDbFileInfo.size);
       if (sandboxDbFileInfo.exists) {
         console.log('Database file is correctly copied to the sandbox directory.');
       } else {
         console.error('Error: Database file is not copied correctly.');
       }
-      const mycardDB = SQLite.openDatabase(localDBPath);
       console.log('open my card db success');
     } catch (error) {
       console.error('Error initializing database:', error);
@@ -81,6 +91,39 @@ const Home = () => {
       }
     } catch (error) {
       console.error('Error initializing database:', error);
+    }
+  };
+  const listFilesRecursively = async (directory) => {
+    try {
+      const content = await FileSystem.readDirectoryAsync(directory);
+  
+      const files = await Promise.all(
+        content.map(async (item) => {
+          const fullPath = `${directory}/${item}`;
+          const fileInfo = await FileSystem.getInfoAsync(fullPath);
+  
+          if (fileInfo.isDirectory) {
+            // 递归处理子目录
+            const subFiles = await listFilesRecursively(fullPath);
+            return {
+              type: 'directory',
+              name: item,
+              files: subFiles,
+            };
+          } else {
+            return {
+              type: 'file',
+              name: item,
+              size: fileInfo.size,
+            };
+          }
+        })
+      );
+  
+      return files;
+    } catch (error) {
+      console.error('Error listing files:', error);
+      return [];
     }
   };
   const createDatabase = async () => {
@@ -115,12 +158,17 @@ const Home = () => {
     }
   };
   const fetchMyCardTables = async () => {
-    const dbFileInfo = await FileSystem.getInfoAsync(`${FileSystem.documentDirectory}${DB_MY_CARD}`);
+    const localDBPath = `${FileSystem.documentDirectory}SQLite/mycard.db`;
+  
+    const dbFileInfo = await FileSystem.getInfoAsync(`${FileSystem.documentDirectory}mycard.db`);
     if (dbFileInfo.exists) {
-      console.log('Database file size:', dbFileInfo.size);
+      console.log(`database file x size: ${dbFileInfo.size}`);
+    } else {
+      console.log('db not exist');
     }
-    const db = SQLite.openDatabase(DB_MY_CARD);
-
+    const db = SQLite.openDatabase('mycard.db');
+    
+    console.log('size:'+db.size+db.localDBPath);
     db.transaction(
         (tx) => {
           tx.executeSql(
@@ -128,7 +176,7 @@ const Home = () => {
               [],
               (_, result) => {
                 const tableNames = result.rows._array.map((row) => row.name);
-                console.log('Table names:', tableNames);
+                console.log('Table names x:', tableNames);
               },
               (_, error) => {
                 console.error('Error fetching table names:', error);
@@ -138,6 +186,7 @@ const Home = () => {
           console.error('Transaction error:', error);
         },
         () => {
+          db.closeAsync();
           console.log('Transaction completed successfully');
         });
   };
@@ -152,6 +201,7 @@ const Home = () => {
             tx.executeSql(
                 'SELECT * FROM datas', [],
                 (_, result) => {
+                  console.log(`datas ${result}`);
                   const data = result.rows._array;
                   setCardData(data);
                 },

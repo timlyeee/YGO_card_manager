@@ -1,7 +1,7 @@
 import { Asset, useAssets } from 'expo-asset';
 import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
-import { Card } from './define';
+import { Card, CardData } from './define';
 const LOCAL_DB_DIR = `${FileSystem.documentDirectory}SQLite`;
 
 const CARDS_DB = 'mycard.cdb';
@@ -10,7 +10,8 @@ const CARDS_DB_LOCATION = `${LOCAL_DB_DIR}/${CARDS_DB}`; // copy to
 const BANK_DB = 'mybank.db';
 const BANK_DB_LOCATION = `${LOCAL_DB_DIR}/${BANK_DB}`;
 
-const INVENTORY_TABLE = 'inventory';
+const INVENTORY_TABLE = 'inventory'; // inventory table name in mybank.db
+const DATA_TABLE = 'datas'; // datas table name in mycard.cdb
 /**
  * Card database and bank/${INVENTORY_TABLE} database
  */
@@ -65,6 +66,17 @@ async function initBankDatabase() {
         });
 
     })
+}
+async function closeDB(){
+  if (carddb) {
+    carddb.closeAsync();
+    carddb = null;
+  }
+
+  if (bankdb) {
+    bankdb.closeAsync();
+    bankdb = null;
+  }
 }
 // utils
 async function listAllTable(db: SQLite.SQLiteDatabase) {
@@ -156,4 +168,63 @@ async function decreaseCardQuantity(card: Card, num: number){
     });
 
 }
-export { carddb, bankdb, initFileSystem, initBankDatabase, initCardDatabase, insertBankCard, increaseCardQuantity, decreaseCardQuantity };
+async function searchCardData(keyword: string): Promise<{cardData: CardData,card: Card}[]> {
+  return new Promise((resolve, reject) => {
+    carddb.transaction(
+      (tx) => {
+        tx.executeSql(
+          `SELECT * FROM ${DATA_TABLE} WHERE name LIKE ?`,
+          [`%${keyword}%`],
+          (_, result) => {
+            const cardData = result.rows._array as CardData[];
+            const promises = cardData.map((cardDataItem) => {
+              return new Promise((resolveCard, rejectCard) => {
+                bankdb.transaction(
+                  (txBank) => {
+                    txBank.executeSql(
+                      `SELECT * FROM ${INVENTORY_TABLE} WHERE id = ?`,
+                      [cardDataItem.id],
+                      (_, resultBank) => {
+                        const card = resultBank.rows.length > 0 ? resultBank.rows.item(0) : null;
+                        resolveCard({ cardData: cardDataItem, card });
+                      },
+                      (_, errorBank) => {
+                        rejectCard(errorBank);
+                        return false;
+                      }
+                    );
+                  },
+                  (errorBank) => {
+                    rejectCard(errorBank);
+                  }
+                );
+              });
+            });
+            // for all promises, set card data one by one
+            Promise.all(promises)
+              .then((searchResults: {cardData: CardData,card: Card}[]) => {
+                resolve(searchResults);
+              })
+              .catch((error) => {
+                reject(error);
+              });
+          },
+          (_, error) => {
+            reject(error);
+            return false;
+          }
+        );
+      },
+      (error) => {
+        reject(error);
+      },
+      () => {
+        console.log('Search transaction completed successfully');
+      }
+    );
+  });
+}
+export { 
+  initFileSystem, initBankDatabase, initCardDatabase, closeDB,
+  insertBankCard, increaseCardQuantity, decreaseCardQuantity, 
+  searchCardData };

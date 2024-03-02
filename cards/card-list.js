@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 
-const CardList = ({ data, onPress,onIncrement, onDecrement  }) => {
+const CardList = ({ cards, onPress,onIncrement, onDecrement  }) => {
   const renderCardItem = ({ item }) => (
     <TouchableOpacity onPress={() => onPress(item)}>
       <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: '#ccc' }}>

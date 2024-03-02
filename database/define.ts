@@ -21,6 +21,13 @@ export class Card {
     }
 }
 export class CardData {
-
-    // constructor
+    public id: number;
+    public name: string;
+    public effect: string;
+    
+    constructor(id: number, name: string, effect: string){
+        this.id = id;
+        this.name = name;
+        this.effect = effect;
+    }
 }

@@ -10,14 +10,16 @@ export const SER = 20;
 export const UTR = 30;
 export const QCSER = 40;
 
-export class Card {
+export class CardInfo {
     public id: number;
     public rarity: number;
     public pack: string;
-    constructor(id, rarity, pack) {
+    public quantity: number;
+    constructor(id, rarity, pack, quantity) {
         this.id = id;
         this.rarity = rarity;
         this.pack = pack;
+        this.quantity = quantity;
     }
 }
 export class CardData {
@@ -31,3 +33,8 @@ export class CardData {
         this.effect = effect;
     }
 }
+
+export type CardPair = {
+    cardData: CardData,
+    cards: CardInfo[]
+};

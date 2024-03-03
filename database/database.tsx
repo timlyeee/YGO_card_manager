@@ -1,7 +1,8 @@
 import { Asset, useAssets } from 'expo-asset';
 import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
-import { Card, CardData } from './define';
+import { CardInfo, CardData, CardPair } from './define';
+import { listFilesRecursively } from '../utils/file-utils';
 const LOCAL_DB_DIR = `${FileSystem.documentDirectory}SQLite`;
 
 const CARDS_DB = 'mycard.cdb';
@@ -12,219 +13,336 @@ const BANK_DB_LOCATION = `${LOCAL_DB_DIR}/${BANK_DB}`;
 
 const INVENTORY_TABLE = 'inventory'; // inventory table name in mybank.db
 const DATA_TABLE = 'datas'; // datas table name in mycard.cdb
-/**
- * Card database and bank/${INVENTORY_TABLE} database
- */
-let carddb: SQLite.SQLiteDatabase, bankdb: SQLite.SQLiteDatabase;
+const TEXT_TABLE = 'texts';
+class Database {
+  private static instance: Database | null = null;
+  private carddb: SQLite.SQLiteDatabase;
+  private bankdb: SQLite.SQLiteDatabase;
 
-async function initFileSystem() {
-  // check local card db
-  if (!(await FileSystem.getInfoAsync(LOCAL_DB_DIR)).exists) {
-    await FileSystem.makeDirectoryAsync(LOCAL_DB_DIR);
-    console.log("Init app sandbox, make database directory success");
+  /**
+   * Card database and bank/${INVENTORY_TABLE} database
+   */
+  private constructor() {
+    console.log('LOCAL_DB_DIR:', LOCAL_DB_DIR);
+    console.log('CARDS_DB_LOCATION:', CARDS_DB_LOCATION);
+    console.log('BANK_DB_LOCATION:', BANK_DB_LOCATION);
+    // 私有构造函数，防止直接实例化
+    this.initFileSystem();
+    this.initCardDatabase().then(() => {
+      // this.listAllTable(this.carddb);
+
+    });
+    this.initBankDatabase().then(() => {
+      // this.listAllTable(this.bankdb)
+    });
+    // listFilesRecursively(LOCAL_DB_DIR);
+
   }
-
-}
-async function initCardDatabase() {
-  // download cards database to sandbox
-  if (!(await FileSystem.getInfoAsync(CARDS_DB_LOCATION)).exists) {
-    await FileSystem.downloadAsync(
-      Asset.fromModule(require(`../assets/${CARDS_DB}`)).uri,
-      CARDS_DB_LOCATION
-    ).then(() => {
-
-
+  public static getInstance(): Database {
+    if (!Database.instance) {
+      Database.instance = new Database();
     }
-    ).catch((error) => {
-      console.error(`Download database failed: ${error}`);
-    });
-  }
-  if (carddb != null) {
-    return;
-  }
-  carddb = SQLite.openDatabase(CARDS_DB_LOCATION);
-}
-// local functions
-async function initBankDatabase() {
-
-  if (bankdb != null) {
-    // already inited
-    return;
-  }
-  bankdb = SQLite.openDatabase(BANK_DB_LOCATION);
-  bankdb.transaction(
-    (tx) => {
-      tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS ${INVENTORY_TABLE} (id INTEGER, pack TEXT, rarity INTEGER, quantity INTEGER)`,
-        [],
-        (_, result) => {
-          console.log('Table created successfully');
-        },
-        (_, error) => {
-          console.error('Error creating table:', error);
-          return false;
-        });
-
-    })
-}
-async function closeDB(){
-  if (carddb) {
-    carddb.closeAsync();
-    carddb = null;
+    return Database.instance;
   }
 
-  if (bankdb) {
-    bankdb.closeAsync();
-    bankdb = null;
+  public async initFileSystem() {
+    console.log("Init file system");
+    // check local card db
+    // await FileSystem.deleteAsync(CARDS_DB_LOCATION);
+    if (!(await FileSystem.getInfoAsync(LOCAL_DB_DIR)).exists) {
+      await FileSystem.makeDirectoryAsync(LOCAL_DB_DIR);
+      console.log("Init app sandbox, make database directory success");
+    }
+
   }
-}
-// utils
-async function listAllTable(db: SQLite.SQLiteDatabase) {
-  db.transaction(
-    (tx) => {
-      tx.executeSql(
-        `SELECT name FROM sqlite_master WHERE type="table" AND name NOT LIKE "android%";`,
-        [],
-        (_, result) => {
-          const tableNames = result.rows._array.map((row) => row.name);
-          console.log('Table names x:', tableNames);
-        },
-        (_, error) => {
-          console.error('Error fetching table names:', error);
-          return false;
-        });
-    },
-    (error) => {
-      console.error('Transaction error:', error);
-    });
-}
-/**
- * Insert card with card_id, pack_number, rarity
- *  */
-async function insertBankCard(card: Card) {
-  bankdb.transaction((tx) => {
-    tx.executeSql(
-      `INSERT INTO ${INVENTORY_TABLE} (id, pack, rarity, quantity) VALUES (?, ?, ?, ?)`,
-      [card.id, card.pack, card.rarity, 0],
-      (_, result) => {
-        console.log('Card added successfully');
-      },
-      (_, error) => {
-        console.error('Error adding card:', error);
-        return false;
+  public async initCardDatabase() {
+    // download cards database to sandbox
+    if (!(await FileSystem.getInfoAsync(CARDS_DB_LOCATION)).exists) {
+      await FileSystem.downloadAsync(
+        Asset.fromModule(require(`../assets/${CARDS_DB}`)).uri,
+        CARDS_DB_LOCATION
+      ).then(() => {
+        console.log(`Download success, ${CARDS_DB_LOCATION}`);
+
+      }
+      ).catch((error) => {
+        console.error(`Download database failed: ${error}`);
       });
-  },
-    (error) => {
-      console.error('Transaction error:', error);
-    },
-    () => {
-      console.log('Transaction completed successfully');
-    })
+    }
 
-}
-async function increaseCardQuantity(card: Card, num: number) {
-  bankdb.transaction(
-    (tx) => {
-      tx.executeSql(
-        `UPDATE ${INVENTORY_TABLE} SET quantity = quantity + ? WHERE id = ? AND rarity = ? AND pack = ?`,
-        [num, card.id, card.rarity, card.pack],
+    if (this.carddb != null) {
+      return;
+    }
+    console.log(`Try open database ${CARDS_DB}, while localdir ${FileSystem.documentDirectory}`)
+    this.carddb = SQLite.openDatabase(CARDS_DB);
 
-        (_, result) => {
-          console.log('Card quantity incremented successfully');
-        },
-        (_, error) => {
-          console.error('Error incrementing card quantity:', error);
-          return false;
-        });
-    },
-    (error) => {
-      console.error('Transaction error:', error);
-    },
-    () => {
-      console.log('Transaction completed successfully');
-    });
+  }
+  // local functions
+  public async initBankDatabase() {
 
-}
+    if (this.bankdb != null) {
+      // already inited
+      return;
+    }
 
-async function decreaseCardQuantity(card: Card, num: number){
-  bankdb.transaction(
-    (tx) => {
-      tx.executeSql(
-        `UPDATE ${INVENTORY_TABLE} SET quantity = CASE WHEN quantity >= ${num} THEN quantity - ${num} ELSE 0 END WHERE id = ${card.id} AND pack = ${card.pack} AND rarity = ${card.rarity}`,
-        [],
-        (_, result) => {
-          console.log('Card quantity incremented successfully');
-        },
-        (_, error) => {
-          console.error('Error incrementing card quantity:', error);
-          return false;
-        });
-    },
-    (error) => {
-      console.error('Transaction error:', error);
-    },
-    () => {
-      console.log('Transaction completed successfully');
-    });
+    this.bankdb = SQLite.openDatabase(BANK_DB);
 
-}
-async function searchCardData(keyword: string): Promise<{cardData: CardData,card: Card}[]> {
-  return new Promise((resolve, reject) => {
-    carddb.transaction(
+    this.bankdb.transaction(
       (tx) => {
         tx.executeSql(
-          `SELECT * FROM ${DATA_TABLE} WHERE name LIKE ?`,
-          [`%${keyword}%`],
+          `CREATE TABLE IF NOT EXISTS ${INVENTORY_TABLE} (id INTEGER,  rarity INTEGER,pack TEXT, quantity INTEGER)`,
+          [],
           (_, result) => {
-            const cardData = result.rows._array as CardData[];
-            const promises = cardData.map((cardDataItem) => {
-              return new Promise((resolveCard, rejectCard) => {
-                bankdb.transaction(
-                  (txBank) => {
-                    txBank.executeSql(
-                      `SELECT * FROM ${INVENTORY_TABLE} WHERE id = ?`,
-                      [cardDataItem.id],
-                      (_, resultBank) => {
-                        const card = resultBank.rows.length > 0 ? resultBank.rows.item(0) : null;
-                        resolveCard({ cardData: cardDataItem, card });
-                      },
-                      (_, errorBank) => {
-                        rejectCard(errorBank);
-                        return false;
-                      }
-                    );
-                  },
-                  (errorBank) => {
-                    rejectCard(errorBank);
-                  }
-                );
-              });
-            });
-            // for all promises, set card data one by one
-            Promise.all(promises)
-              .then((searchResults: {cardData: CardData,card: Card}[]) => {
-                resolve(searchResults);
-              })
-              .catch((error) => {
-                reject(error);
-              });
+            console.log('Table created successfully');
           },
           (_, error) => {
-            reject(error);
+            console.error('Error creating table:', error);
+            return false;
+          });
+
+      })
+  }
+  public async closeDB() {
+    if (this.carddb) {
+      this.carddb.closeAsync();
+      this.carddb = null;
+    }
+
+    if (this.bankdb) {
+      this.bankdb.closeAsync();
+      this.bankdb = null;
+    }
+  }
+  // utils
+  public async listAllTable(db: SQLite.SQLiteDatabase) {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          `SELECT name FROM sqlite_master WHERE type="table" AND name NOT LIKE "android%";`,
+          [],
+          (_, result) => {
+            const tableNames = result.rows._array.map((row) => row.name);
+            console.log('Table names x:', tableNames);
+          },
+          (_, error) => {
+            console.error('Error fetching table names:', error);
+            return false;
+          });
+      },
+      (error) => {
+        console.error('Transaction error:', error);
+      });
+  }
+  /**
+   * Insert card with card_id, pack_number, rarity
+   *  */
+  public async insertBankCard(card: CardInfo) {
+    this.bankdb.transaction((tx) => {
+      tx.executeSql(
+        `INSERT INTO ${INVENTORY_TABLE} (id, rarity,pack, quantity) VALUES (?, ?, ?, ?)`,
+        [card.id, card.rarity, card.pack, card.quantity],
+        (_, result) => {
+          console.log('Card added successfully');
+        },
+        (_, error) => {
+          console.error('Error adding card:', error);
+          return false;
+        });
+    },
+      (error) => {
+        console.error('Transaction error:', error);
+      },
+      () => {
+        console.log('Transaction completed successfully');
+      })
+
+  }
+  public async increaseCardQuantity(card: CardInfo, num: number) {
+    this.bankdb.transaction(
+      (tx) => {
+        tx.executeSql(
+          `UPDATE ${INVENTORY_TABLE} SET quantity = quantity + ? WHERE id = ? AND rarity = ? AND pack = ?`,
+          [num, card.id, card.rarity, card.pack],
+
+          (_, result) => {
+            console.log('Card quantity incremented successfully');
+          },
+          (_, error) => {
+            console.error('Error incrementing card quantity:', error);
+            return false;
+          });
+      },
+      (error) => {
+        console.error('Transaction error:', error);
+      },
+      () => {
+        console.log('Transaction completed successfully');
+      });
+
+  }
+
+  public async decreaseCardQuantity(card: CardInfo, num: number) {
+    this.bankdb.transaction(
+      (tx) => {
+        tx.executeSql(
+          `UPDATE ${INVENTORY_TABLE} SET quantity = CASE WHEN quantity >= ${num} THEN quantity - ${num} ELSE 0 END WHERE id = ${card.id} AND pack = ${card.pack} AND rarity = ${card.rarity}`,
+          [],
+          (_, result) => {
+            console.log('Card quantity incremented successfully');
+          },
+          (_, error) => {
+            console.error('Error incrementing card quantity:', error);
+            return false;
+          });
+      },
+      (error) => {
+        console.error('Transaction error:', error);
+      },
+      () => {
+        console.log('Transaction completed successfully');
+      });
+
+  }
+  public async searchCardData(keyword: string): Promise<CardPair[]> {
+    return new Promise<CardPair[]>((resolve, reject) => {
+      console.log(`Try transact from carddb ${this.carddb}`);
+      this.carddb.transaction(
+        (tx) => {
+          tx.executeSql(
+            `SELECT * FROM ${TEXT_TABLE} WHERE name LIKE ?`,
+            [`%${keyword}%`],
+            (_, result) => {
+              const cardData: CardData[] = result.rows._array.map((item: any) => ({
+                id: item.id,
+                name: item.name,
+                effect: item.desc
+              }));
+              const promises: Promise<CardPair>[] = cardData.map((cardDataItem) => {
+                return new Promise<CardPair>((resolveCard, rejectCard) => {
+                  this.bankdb.transaction(
+                    (txBank) => {
+                      txBank.executeSql(
+                        `SELECT * FROM ${INVENTORY_TABLE} WHERE id = ?`,
+                        [cardDataItem.id],
+                        (_, resultBank) => {
+                          const cards: CardInfo[] = resultBank.rows._array || [];
+                          resolveCard({ cardData: cardDataItem, cards: cards });
+                        },
+                        (_, errorBank) => {
+                          rejectCard(errorBank);
+                          return false;
+                        }
+                      );
+                    },
+                    (errorBank) => {
+                      rejectCard(errorBank);
+                    }
+                  );
+                });
+              });
+              // for all promises, set card data one by one
+              Promise.all(promises)
+                .then((searchResults: CardPair[]) => {
+                  resolve(searchResults);
+                })
+                .catch((error) => {
+                  reject(error);
+                });
+            },
+            (_, error) => {
+              reject(error);
+              return false;
+            }
+          );
+        },
+        (error) => {
+          reject(error);
+        },
+        () => {
+          console.log('Search transaction completed successfully');
+        }
+      );
+    });
+  }
+  public async fetchMyBankData(): Promise<CardPair[]> {
+    return new Promise<CardPair[]>((resolve, reject) => {
+      console.log(`fetch my bank data`);
+      this.bankdb.transaction(
+        (tx) => {
+          tx.executeSql(
+            `SELECT * FROM ${INVENTORY_TABLE} WHERE quantity > 0`,
+            [],
+            (_, result) => {
+              const cardsMap = new Map<number, CardPair>();// id to card pair
+
+              for (let i = 0; i < result.rows.length; i++) {
+                const item = result.rows.item(i);
+
+                const cardInfo = new CardInfo(item.id, item.rarity, item.pack, item.quantity);
+
+                if (cardsMap.has(item.id)) {
+                  // If the id already exists in the map, update the existing entry
+                  const existingEntry = cardsMap.get(item.id);
+                  existingEntry.cards.push(cardInfo);
+                } else {
+                  // If the id is not present, create a new entry
+                  const cardData = this.getCardDataByID(item.id)
+                  const newEntry: CardPair = { cardData, cards: [cardInfo] };
+
+                  cardsMap.set(item.id, newEntry);
+                }
+              }
+
+              // Filter out entries with total quantity <= 0
+              const filteredData = Array.from(cardsMap.values()).filter(
+                (entry) => entry.cards.reduce((total, card) => total + card.quantity, 0) > 0
+              );
+              resolve(filteredData);
+            },
+            (_, error) => {
+              console.error('Error fetching my bank data', error);
+              reject(error);
+              return false;
+            }
+
+          );
+        },
+        (error) => {
+          console.error('Transaction error', error);
+        }
+      );
+    });
+  }
+
+  public getCardDataByID(id: number): CardData {
+
+    let cardData: CardData = { id: -1, name: 'Unknown', effect: 'Unknown' }; // 默认值
+    this.carddb.transaction(
+      (tx) => {
+        tx.executeSql(
+          'SELECT * FROM texts WHERE id = ?',
+          [id],
+          (_, result) => {
+            if (result.rows.length > 0) {
+              var item = result.rows.item(0)
+              cardData.id = item.id;
+              cardData.name = item.name;
+              cardData.effect = item.effect;
+            }
+          },
+          (_, error) => {
+            console.error('Error executing SQL query', error);
             return false;
           }
         );
       },
       (error) => {
-        reject(error);
-      },
-      () => {
-        console.log('Search transaction completed successfully');
+        console.error('Error opening texts database transaction', error);
       }
     );
-  });
+    return cardData;
+  };
+
 }
-export { 
-  initFileSystem, initBankDatabase, initCardDatabase, closeDB,
-  insertBankCard, increaseCardQuantity, decreaseCardQuantity, 
-  searchCardData };
+
+export const database = Database.getInstance();

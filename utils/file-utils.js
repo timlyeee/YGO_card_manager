@@ -12,17 +12,17 @@ const listFilesRecursively = async (directory) => {
                 if (fileInfo.isDirectory) {
                     // 递归处理子目录
                     const subFiles = await listFilesRecursively(fullPath);
-                    return {
-                        type: 'directory',
-                        name: item,
-                        files: subFiles,
-                    };
+                    console.log (`
+                    type: 'directory',
+                    name: ${item},`
+                );
                 } else {
-                    return {
-                        type: 'file',
-                        name: item,
-                        size: fileInfo.size,
-                    };
+                    console.log (`
+                    type: 'file',
+                    name: ${item},
+                    size: ${fileInfo.size},
+                    location: ${fileInfo.uri}`
+                    );
                 }
             })
         );

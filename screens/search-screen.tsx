@@ -3,19 +3,23 @@ import * as FileSystem from 'expo-file-system';
 import * as SQLite from 'expo-sqlite';
 import React, { useEffect, useState } from 'react';
 import { Button, FlatList, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import * as database from '../database/database';
+import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
 import AddCardButton from '../cards/add-card-button';
 import AddCardModal from '../cards/add-card-modal';
 import CardDetails from '../cards/card-detail';
 import CardList from '../cards/card-list';
-import AnimatedSearchBar from '../components/animated-search-bar';
-import '../database/define';
+import AnimatedSearchBar from '../components/search-bar';
+import { CardPair } from '../database/define';
+import { database } from '../database/database';
+import { useNavigation } from '@react-navigation/native';
+import SearchBar from '../components/search-bar';
 
 
-const SearchScreen = () => {
+const SearchScreen = ({ navigation }) => {
   const [searchText, setSearchText] = useState('');
   const [myCardsOnly, setMyCardsOnly] = useState(false);
-  const [cardData, setCardData] = useState([]);
+  const [cards, setCards] = useState<CardPair[]>([]);
   const [selectedCard, setSelectedCard] = useState(null);
   const [isAddCardModalVisible, setAddCardModalVisible] = useState(false);
   const [isSearchBarFocused, setIsSearchBarFocused] = useState(false);
@@ -24,7 +28,9 @@ const SearchScreen = () => {
   }, []);  // 注意：空的依赖数组确保 useEffect 只在组件加载时执行一次
 
 
-
+  const goBack=()=>{
+    navigation.goBack();
+  }
   const handleSearchFocus = () => {
     setIsSearchBarFocused(true);
   };
@@ -32,47 +38,26 @@ const SearchScreen = () => {
   const handleSearchBlur = () => {
     setIsSearchBarFocused(false);
   };
-  function handleSearchCard(keyword: string) {
-    database.searchCardData(keyword).then((cards)=>{
-      setCardData(cards);
+  function handleSearchCard(keyword) {
+    database.searchCardData(keyword).then((cards) => {
+      setCards(cards);
     });
 
   }
   return (
 
     <View style={{
-      padding: 16, paddingTop: isSearchBarFocused ? 2 : 120
+      padding: 16, paddingTop: 44
     }}>
 
-      {/* 自定义的 Card Search Bar */}
-
-      {/* <Button title='search'> </Button> */}
-      <AnimatedSearchBar
-        viewStyle=
-        {
-          { marginTop: 100 }
-        } onFocus={handleSearchFocus} onBlur=
-        {handleSearchBlur} onSearch={(text) => setSearchText(text)} >
-      </AnimatedSearchBar>
-
-      <AddCardButton onPress={handleAddCardPress} />{
-        (<CardList data={cards} onPress=
-          {handleCardPress} onIncrement={handleIncrement}
-          // 传递新增卡片数量的处理函数
-          onDecrement=
-          {
-            handleDecrement
-          }  // 传递减少卡片数量的处理函数
-        />
-        )}
-
-      {selectedCard && (
-        <CardDetails card={selectedCard} onClose={handleCloseCardDetails} />)}
-      < AddCardModal
-        visible={isAddCardModalVisible}
-        onClose={() => setAddCardModalVisible(false)}
-        onAddCard={handleAddCard}
-      />
+      <SearchBar 
+        onBack={goBack} 
+        onFocus={handleSearchFocus}
+        onBlur={handleSearchBlur}
+        onSearch={handleSearchCard}/>
+      {cards && (
+        <CardList cards={cards}/>
+      )}
     </View>
   );
 };

@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList,StyleSheet, TouchableOpacity, StyleProp, ViewStyle, Modal } from 'react-native';
 import '../database/define'
 import { CardInfo, CardData, CardPair } from '../database/define';
 import { database } from '../database/database';
 import CardDetails from './card-detail';
-
 const CardList = ({ cards, listStyle }: {
   cards: CardPair[];
   listStyle?: StyleProp<ViewStyle>; // 添加 style prop
@@ -12,6 +11,7 @@ const CardList = ({ cards, listStyle }: {
   // onIncrement: (id: number) => void;
   // onDecrement: (id: number) => void;
 }) => {
+
   const [selectedCard, setSelectedCard] = useState<CardPair | null>(null);
   const renderCard = ({ item }: { item: CardPair }) => {
     const totalQuantity = item.cards.reduce((acc, card) => acc + card.quantity, 0);

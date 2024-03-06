@@ -29,14 +29,18 @@ class Database {
     // 私有构造函数，防止直接实例化
     this.initFileSystem();
     this.initCardDatabase().then(() => {
-      // this.listAllTable(this.carddb);
-
+      this.isCardDBOpened = true;
     });
     this.initBankDatabase().then(() => {
-      // this.listAllTable(this.bankdb)
+      this.isBankDBOpened = true;
     });
     // listFilesRecursively(LOCAL_DB_DIR);
 
+  }
+  private isCardDBOpened: boolean = false;
+  private isBankDBOpened: boolean = false;
+  public get isOpened(): boolean {
+    return this.isCardDBOpened && this.isBankDBOpened;
   }
   public static getInstance(): Database {
     if (!Database.instance) {

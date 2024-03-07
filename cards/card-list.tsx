@@ -4,14 +4,27 @@ import '../database/define'
 import { CardInfo, CardData, CardPair } from '../database/define';
 import { database } from '../database/database';
 import CardDetails from './card-detail';
-const CardList = ({ cards, listStyle }: {
+const CardList = ({ setTrigger, cards, listStyle }: {
+  setTrigger: ()=>void;
   cards: CardPair[];
   listStyle?: StyleProp<ViewStyle>; // 添加 style prop
   // onPress: (card: CardPair) => void;
   // onIncrement: (id: number) => void;
   // onDecrement: (id: number) => void;
 }) => {
-
+  useEffect(()=>{
+    console.log("render card list");
+    if(selectedCard){
+      var card = cards.find((card: CardPair)=>{
+        return card.cardData.id==selectedCard.cardData.id;
+      });
+      if(card!=null){
+        console.log("set selectd card");
+        setSelectedCard(card);
+      }
+    }
+    
+  },[cards])
   const [selectedCard, setSelectedCard] = useState<CardPair | null>(null);
   const renderCard = ({ item }: { item: CardPair }) => {
     const totalQuantity = item.cards.reduce((acc, card) => acc + card.quantity, 0);
@@ -36,12 +49,14 @@ const CardList = ({ cards, listStyle }: {
       console.log(`cardinfo added ${card}`);
       database.insertBankCard(card);
       database.increaseCardQuantity(card, 1);
+      setTrigger();
     }
   };
 
   const handleDecrease = (card: CardInfo) => {
     if (selectedCard) {
       database.decreaseCardQuantity(card, 1);
+      setTrigger();
     }
   };
   return (
@@ -55,7 +70,10 @@ const CardList = ({ cards, listStyle }: {
       {/* Modal for displaying card details */}
       <Modal animationType="slide" transparent={true} visible={selectedCard !== null}>
         <View style={styles.modalContainer}>
-          <CardDetails cardPair={selectedCard || { cardData: { id: 0, name: '', effect: '' }, cards: [] }} onClose={handleCloseModal} onIncrease={handleIncrease} onDecrease={handleDecrease} />
+          <CardDetails cardPair={selectedCard || { cardData: { id: 0, name: '', effect: '' }, cards: [] }} 
+              onClose={handleCloseModal} 
+              onIncrease={handleIncrease} 
+              onDecrease={handleDecrease} />
         </View>
       </Modal>
     </>

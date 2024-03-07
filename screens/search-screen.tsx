@@ -14,18 +14,22 @@ import { useFocusEffect } from '@react-navigation/native';
 const SearchScreen = ({ navigation }) => {
   const [keyword, setKeyWord] = useState<string>('');
   const [cards, setCards] = useState<CardPair[]>([]);
-  const [isDirty, setIsDirty] = useState<boolean>(false);
+  const [trigger, setTrigger] = useState<boolean>(false);
   const [isSearchBarFocused, setIsSearchBarFocused] = useState<boolean>(false);
   useEffect(() => {
+    //监听trigger和keyword，保证searchlist和当前card的数量显示是一致的。
     if(database.isOpened){
       console.log("database is opened");
-      database.searchCardData(keyword).then((cards) => {
-        setCards(cards);
-        setIsDirty(true);
-      });
+      if(keyword!=''){
+        database.searchCardData(keyword).then((cards) => {
+          setCards(cards);
+        });
+      }
+      
     }
     console.log("use effect when isDirty or keyword changed")
-  }, [keyword, isDirty]);  // 注意：空的依赖数组确保 useEffect 只在组件加载时执行一次
+  }, [keyword, trigger]);  
+
 
   const goBack = () => {
     navigation.goBack();
@@ -39,8 +43,9 @@ const SearchScreen = ({ navigation }) => {
   };
   function handleSearchCard(keyword) {
     setKeyWord(keyword);
-    
-
+  }
+  function triggy(){
+    setTrigger(!trigger);
   }
   return (
 
@@ -54,7 +59,7 @@ const SearchScreen = ({ navigation }) => {
         onBlur={handleSearchBlur}
         onSearch={handleSearchCard} />
       {cards && (
-        <CardList cards={cards} />
+        <CardList cards={cards} setTrigger={triggy}/>
       )}
     </View>
   );

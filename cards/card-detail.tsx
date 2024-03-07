@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, FlatList, TextInput, Button } from 'react-native';
 import { CardInfo, CardPair } from '../database/define';
 
@@ -8,6 +8,9 @@ const CardDetails = ({ cardPair, onClose, onIncrease, onDecrease }: {
   onIncrease: (card: CardInfo) => void;
   onDecrease: (card: CardInfo)=>void;
 }) => {
+  useEffect(()=>{
+    console.log("card details rendered");
+  },[cardPair])
   const [newCardId, setNewCardId] = useState('');
   const [newCardRarity, setNewCardRarity] = useState('');
   const [newCardPack, setNewCardPack] = useState('');
@@ -37,34 +40,32 @@ const CardDetails = ({ cardPair, onClose, onIncrease, onDecrease }: {
           />
 
 
-          <TextInput
-            placeholder="Rarity"
-            onChangeText={(text) => setNewCardRarity(text)}
-            value={newCardRarity}
-          />
-          <TextInput
-            placeholder="Pack"
-            onChangeText={(text) => setNewCardPack(text)}
-            value={newCardPack}
-          />
+          
 
           <Button
             title="Add"
             onPress={() => {
               const newCard: CardInfo = {
                 id: cardPair.cardData.id,
-                rarity: parseInt(newCardRarity),
-                pack: newCardPack,
+                rarity: 0,
+                pack: "0",
                 quantity: 1,
               };
               onIncrease(newCard);
-              // Clear input fields
-              setNewCardId('');
-              setNewCardRarity('');
-              setNewCardPack('');
-              setNewCardQuantity('');
             }}
           />
+          <Button 
+            title="Decrease"
+            onPress={()=>{
+              const newCard: CardInfo = {
+                id: cardPair.cardData.id,
+                rarity: 0,
+                pack: "0",
+                quantity: 1,
+              };
+              onDecrease(newCard)
+            }}/>
+
 
           <TouchableOpacity onPress={onClose}>
             <Text style={{ color: 'blue', marginTop: 16 }}>Close</Text>

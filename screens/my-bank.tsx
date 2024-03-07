@@ -6,16 +6,31 @@ import { Button, FlatList, StyleSheet, Switch, Text, TextInput, TouchableOpacity
 import CardList from '../cards/card-list';
 import { CardPair } from '../database/define';
 import { database } from '../database/database';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 const MyBank = ({navigation}) => {
 
 
   const [cards, setCards] = useState<CardPair[]>([]);
+  const [trigger, setTrigger] = useState<boolean>(false);
+  function triggy(){
+    setTrigger(!trigger);
+
+  }
+  const isFocused = useIsFocused();
   useEffect(() => {
-    database.fetchMyBankData().then((results)=>{
+    console.log("use mybank effect");
+      database.fetchMyBankData().then((results)=>{
       
       setCards(results);
     });
-  }, []);
+    if(isFocused){
+      console.log("is focus, update");
+      database.fetchMyBankData().then((results)=>{
+      
+        setCards(results);
+      });
+    }
+  }, [trigger, isFocused]);
 
   return (
 
@@ -26,7 +41,7 @@ const MyBank = ({navigation}) => {
     }}>
 
 
-    <CardList cards={cards}/>
+    <CardList cards={cards} setTrigger={triggy}/>
 
     </View>
   );

@@ -34,7 +34,7 @@ class Database {
     this.initBankDatabase().then(() => {
       this.isBankDBOpened = true;
     });
-    // listFilesRecursively(LOCAL_DB_DIR);
+    listFilesRecursively(LOCAL_DB_DIR);
 
   }
   private isCardDBOpened: boolean = false;
@@ -52,7 +52,7 @@ class Database {
   public async initFileSystem() {
     console.log("Init file system");
     // check local card db
-    // await FileSystem.deleteAsync(CARDS_DB_LOCATION);
+    // await FileSystem.deleteArsync(CARDS_DB_LOCATION);
     if (!(await FileSystem.getInfoAsync(LOCAL_DB_DIR)).exists) {
       await FileSystem.makeDirectoryAsync(LOCAL_DB_DIR);
       console.log("Init app sandbox, make database directory success");
@@ -67,7 +67,6 @@ class Database {
         CARDS_DB_LOCATION
       ).then(() => {
         console.log(`Download success, ${CARDS_DB_LOCATION}`);
-
       }
       ).catch((error) => {
         console.error(`Download database failed: ${error}`);
@@ -90,11 +89,34 @@ class Database {
     }
 
     this.bankdb = SQLite.openDatabase(BANK_DB);
-
+    // this.bankdb.transaction(
+    //   (tx) => {
+    //     tx.executeSql(
+    //       'DROP TABLE IF EXISTS inventory',
+    //       [],
+    //       (_, result) => {
+    //         console.log('Table dropped successfully');
+    //       },
+    //       (_, error) => {
+    //         console.error('Error dropping table:', error);
+    //         return false;
+    //       }
+    //     );
+    //   },
+    //   (error) => {
+    //     console.error('Transaction error:', error);
+    //   }
+    // );
     this.bankdb.transaction(
       (tx) => {
         tx.executeSql(
-          `CREATE TABLE IF NOT EXISTS ${INVENTORY_TABLE} (id INTEGER,  rarity INTEGER,pack TEXT, quantity INTEGER)`,
+          `CREATE TABLE IF NOT EXISTS ${INVENTORY_TABLE} (
+            id INTEGER,  
+            rarity INTEGER,
+            pack TEXT, 
+            quantity INTEGER,
+            PRIMARY KEY (id, rarity, pack)
+            )`,
           [],
           (_, result) => {
             console.log('Table created successfully');
@@ -143,7 +165,10 @@ class Database {
   public async insertBankCard(card: CardInfo) {
     this.bankdb.transaction((tx) => {
       tx.executeSql(
-        `INSERT INTO ${INVENTORY_TABLE} (id, rarity,pack, quantity) VALUES (?, ?, ?, ?)`,
+        `INSERT INTO ${INVENTORY_TABLE} (id, rarity,pack, quantity) 
+        VALUES (?, ?, ?, ?) 
+        ON CONFLICT (id, rarity, pack)
+        DO NOTHING`,
         [card.id, card.rarity, card.pack, card.quantity],
         (_, result) => {
           console.log('Card added successfully');
@@ -276,39 +301,57 @@ class Database {
           tx.executeSql(
             `SELECT * FROM ${INVENTORY_TABLE} WHERE quantity > 0`,
             [],
-            (_, result) => {
-              const cardsMap = new Map<number, CardPair>();// id to card pair
-
+            async (_, result) => {
+              const cardsMap = new Map<number, CardPair>(); // id to card pair
+              const cardDataPromises: Promise<CardData>[] = [];
+  
               for (let i = 0; i < result.rows.length; i++) {
                 const item = result.rows.item(i);
-
                 const cardInfo = new CardInfo(item.id, item.rarity, item.pack, item.quantity);
-
+  
+                // Collect promises for fetching CardData
+                cardDataPromises.push(this.getCardDataByID(item.id));
+  
                 if (cardsMap.has(item.id)) {
                   // If the id already exists in the map, update the existing entry
                   const existingEntry = cardsMap.get(item.id);
                   existingEntry.cards.push(cardInfo);
                 } else {
                   // If the id is not present, create a new entry
-                  const cardData = this.getCardDataByID(item.id)
-                  const newEntry: CardPair = { cardData, cards: [cardInfo] };
-
+                  const newEntry: CardPair = { cardData: null, cards: [cardInfo] };
                   cardsMap.set(item.id, newEntry);
                 }
               }
-
-              // Filter out entries with total quantity <= 0
-              const filteredData = Array.from(cardsMap.values()).filter(
-                (entry) => entry.cards.reduce((total, card) => total + card.quantity, 0) > 0
-              );
-              resolve(filteredData);
+  
+              try {
+                // Wait for all CardData promises to resolve
+                const cardDataList = await Promise.all(cardDataPromises);
+  
+                // Update CardData in the cardsMap
+                cardDataList.forEach((cardData, index) => {
+                  const itemId = result.rows.item(index).id;
+                  const entry = cardsMap.get(itemId);
+                  if (entry) {
+                    entry.cardData = cardData;
+                  }
+                });
+  
+                // Filter out entries with total quantity <= 0
+                const filteredData = Array.from(cardsMap.values()).filter(
+                  (entry) => entry.cards.reduce((total, card) => total + card.quantity, 0) > 0
+                );
+  
+                resolve(filteredData);
+              } catch (error) {
+                console.error('Error fetching CardData', error);
+                reject(error);
+              }
             },
             (_, error) => {
               console.error('Error fetching my bank data', error);
               reject(error);
               return false;
             }
-
           );
         },
         (error) => {
@@ -317,35 +360,45 @@ class Database {
       );
     });
   }
+  
+  public getCardDataByID(id: number): Promise<CardData> {
+    return new Promise((resolve, reject) => {
+        let cardData: CardData = { id: -1, name: 'Unknown', effect: 'Unknown' }; // 默认值
+        this.carddb.transaction(
+            (tx) => {
+                tx.executeSql(
+                    `SELECT * FROM texts WHERE id = ?`,
+                    [id],
+                    (_, result) => {
+                        console.log(`result ${result}`);
+                        if (result.rows.length > 0) {
+                            var item = result.rows.item(0)
+                            cardData.id = item.id;
+                            cardData.name = item.name;
+                            cardData.effect = item.effect;
 
-  public getCardDataByID(id: number): CardData {
-
-    let cardData: CardData = { id: -1, name: 'Unknown', effect: 'Unknown' }; // 默认值
-    this.carddb.transaction(
-      (tx) => {
-        tx.executeSql(
-          'SELECT * FROM texts WHERE id = ?',
-          [id],
-          (_, result) => {
-            if (result.rows.length > 0) {
-              var item = result.rows.item(0)
-              cardData.id = item.id;
-              cardData.name = item.name;
-              cardData.effect = item.effect;
+                            console.log(`search id ${id}, get card id ${cardData.id} with name ${cardData.name}`);
+                            resolve(cardData);
+                        } else {
+                            console.log(`No card found for ID: ${id}`);
+                            resolve(cardData); // 返回默认值
+                        }
+                    },
+                    (_, error) => {
+                        console.error('Error executing SQL query', error);
+                        reject(error);
+                        return false;
+                    }
+                );
+            },
+            (error) => {
+                console.error('Error opening texts database transaction', error);
+                reject(error);
             }
-          },
-          (_, error) => {
-            console.error('Error executing SQL query', error);
-            return false;
-          }
         );
-      },
-      (error) => {
-        console.error('Error opening texts database transaction', error);
-      }
-    );
-    return cardData;
-  };
+    });
+}
+
 
 }
 

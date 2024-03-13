@@ -1,17 +1,24 @@
-# Installation
+# YGO_Card_Manager 
 
-本项目基于Expo app构建，所以安装步骤和Expo app相同。快速验证的话，按照下面的配置方式也可。
+## 依赖环境
 
-## Windows
+* [Android SDK](https://developer.android.com/)
+* Java Development Kit (JDK) 11
+* NodeJS v20+
+* VSCode + Expo Utils（VS插件）
+
+## 安装步骤
+
+本项目基于Expo app构建，本质是基于ReactNative的再扩展，所以安装步骤和Expo app相同。快速验证的话，按照下面的配置方式也可。
 
 1. 安装Node，version 20，以保证所有包都可以被正确安装。
 
-2. 安装Yarn。可以使用npm进行安装
+2. 安装[Yarn](https://yarnpkg.com/)，我们的大部分操作将基于Yarn完成。可以使用npm进行安装
 
     ```sh
     # 安装yarn
     npm install -g yarn
-    # 安装环境所需包 
+    # 通过Yarn安装环境所需包 
     yarn install
     ```
 
@@ -25,12 +32,36 @@
     ```sh
     export ANDROID_HOME=$HOME/Library/Android/sdk && export PATH=$PATH:$ANDROID_HOME/emulator && export PATH=$PATH:$ANDROID_HOME/platform-tools
     ```
-5. 安装OpenJDK，对于Expo app版本为49的本项目，需安装jdk11。可以通过chocolatay安装或手动安装。
+5. 安装OpenJDK，对于Expo app版本为49的本项目，需安装jdk11。可以通过chocolatay安装或手动安装。并设置JAVA_HOME的环境
     ```sh
+    # On windows
     choco install -y microsoft-openjdk11
+    # On Macos
+    brew install java11
+    export JAVA_HOME=path/to/javahome
     ```
-6. 运行`npx expo run:android`或`yarn android`来运行android项目
+6. 运行`yarn android`来快速运行项目在android中，如果上述步骤都正确，在这一步，你应该可以打开刚刚下载好的模拟器，并成功运行本项目。
 
+
+## 基于Expo App的运行
+
+ExpoApp本质是一个现成的Java Script运行环境，它允许你直接在上面执行js脚本。当JS脚本发生变动时，也会实时的反馈到ExpoApp中。在不涉及到原生层的逻辑变更，以及自定义的Java/c++代码时，使用ExpoApp的运行环境绰绰有余。
+
+运行方式有两种，都是在终端执行。
+1. 运行`yarn android`，实际上是执行了package.json中的android指令。所以如果是基于原生模式执行，就会运行皆然不同的指令。
+2. 运行`expo start: android`
+
+在修改代码之后，Expo一般会自动重新渲染界面，但是如果发生报错，还是需要执行Reload，具体操作就是在命令行中直接输入r，或者强制退出后再次运行。
+
+## 基于原生模式执行
+
+基于原生模式打包的逻辑，是不依赖ExpoApp进行运行，这样就可以避免反复建立服务器的情况。
+
+运行`expo run: android`
+
+## 打包
+
+当需要完全打包成一个独立的App时，需要完整的打包的流程。这里会有两个打包模式可以选择，一个是基于Expo云端的打包，另一个是本地打包。两者都需要eas账号。此外，如果能在ExpoApp中完美运行，那么基于云端的打包一定是成功的。但是本地打包不一定，因为需要兼容各个安卓版本。
 
 ## 文档
 

@@ -3,8 +3,9 @@
 ## 依赖环境
 
 * [Android SDK](https://developer.android.com/)
-* Java Development Kit (JDK) 11
+* Java Development Kit (JDK) 17
 * NodeJS v20+
+* Expo v50
 * VSCode + Expo Utils（VS插件）
 
 ## 安装步骤
@@ -35,14 +36,30 @@
 5. 安装OpenJDK，对于Expo app版本为49的本项目，需安装jdk11。可以通过[chocolatay](https://docs.chocolatey.org/en-us/choco/setup)安装或手动安装。并设置JAVA_HOME的环境
     ```sh
     # On windows
-    choco install -y microsoft-openjdk11
+    choco install -y microsoft-openjdk17
+    # Powershell set enviroment
     [System.Environment]::SetEnvironmentVariable('JAVA_HOME','path/to/javahome')
     # On Macos
-    brew install java11
+    brew install java17
     export JAVA_HOME=path/to/javahome
     ```
 6. 运行`yarn android`来快速运行项目在android中，如果上述步骤都正确，在这一步，你应该可以打开刚刚下载好的模拟器，并成功运行本项目。
+## 在Windows环境中，使用Mumu，雷电模拟器等安卓模拟器
 
+目前在网络环境受限，或者由于某些安卓设备限制，不能保证expo完全能够连接上Metro bundler服务器，但是mumu模拟器可以，所以建议使用以下方式连接mumu模拟器的ip端，并运行应用。
+
+```sh
+# connect to mumu ip address
+adb connect 127.0.0.1:16384
+# check devices
+adb devices
+# expected result
+$: List of devices attached
+$: 127.0.0.1:16384 device
+```
+这一类模拟器同样可以被连接到Android Studio中进行debug测试。
+
+Mac暂时没有发现问题，可能是react native都是优越的Mac用户吧。
 
 ## 基于Expo App的运行
 
@@ -50,16 +67,15 @@ ExpoApp本质是一个现成的Java Script运行环境，它允许你直接在�
 
 运行方式有两种，都是在终端执行。需要[ExpoCli](https://docs.expo.dev/more/expo-cli/)的使用基础
 ```sh
-expo start:android
+npx expo start:android
 ```
-同时，基于ExpoApp的运行模式，在修改代码之后，Expo一般会自动重新渲染界面，但是如果发生报错，还是需要执行Reload，具体操作就是在命令行中直接输入r，或者强制退出后再次运行。
 
 ## 基于原生模式执行
 
 基于原生模式打包的逻辑，是不依赖ExpoApp进行运行，这样就可以避免反复建立服务器的情况。
 
 ```sh
-expo run:android
+npx expo run:android
 ```
 ## 打包
 

@@ -1,6 +1,4 @@
-import { Asset, useAssets } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
-import * as SQLite from 'expo-sqlite';
+
 import React, { useEffect, useState } from 'react';
 import { Button, FlatList, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import CardList from '../cards/card-list';

@@ -1,19 +1,8 @@
-import { Asset, useAssets } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
-import * as SQLite from 'expo-sqlite';
 import React, { useEffect, useState } from 'react';
 import { Button, FlatList, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import * as database from '../database/database';
-import AddCardButton from '../cards/add-card-button';
-import AddCardModal from '../cards/add-card-modal';
-import CardDetails from '../cards/card-detail';
-import CardList from '../cards/card-list';
-import AnimatedSearchBar from '../components/search-bar';
 import '../database/define';
-import { NavigationState, useNavigation } from '@react-navigation/native';
-import SearchBar from '../components/search-bar';
+
 import SearchNavigate from '../components/search-navigate';
-import { BottomNavigationBar } from '../components/bottom-navigation-bar';
 const Home = ({ navigation }) => {
 
 

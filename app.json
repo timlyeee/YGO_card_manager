@@ -2,6 +2,7 @@
   "expo": {
     "name": "YGO_card_manager",
     "slug": "YGO_card_manager",
+    "owner": "ygo_card_manager_team",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,7 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.timlyeee.YGO_card_manager"
+      "package": "com.timlyeee.ygm"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,6 +33,7 @@
       "expo-router"
     ],
     "extra": {
+      
       "router": {
         "origin": false
       },

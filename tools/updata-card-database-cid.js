@@ -9,9 +9,9 @@ const db = new sqlite3.Database(databasePath);
 
 // 开启事务
 db.serialize(() => {
-    // 检查 datas 表中是否存在 cid 列
+    // 检查 texts 表中是否存在 cid 列
     db.all(`
-    PRAGMA table_info(datas);
+    PRAGMA table_info(texts);
   `, (err, result) => {
         if (err) {
             console.error('Error checking cid column:', err);
@@ -20,7 +20,7 @@ db.serialize(() => {
             const hasCidColumn = result.some(column => column.name === 'cid');
             if (!hasCidColumn) {
                 db.run(`
-          ALTER TABLE datas
+          ALTER TABLE texts
           ADD COLUMN cid INTEGER;
         `, (alterErr) => {
                     if (alterErr) {
@@ -48,7 +48,7 @@ function updateDatabase() {
 
     // 开始插入数据
     const stmt = db.prepare(`
-      UPDATE datas SET cid = ? WHERE id = ?
+      UPDATE texts SET cid = ? WHERE id = ?
     `);
 
     // 执行所有更新操作

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, FlatList, TextInput, Button } from 'react-native';
 import { CardInfo, CardPair } from '../database/define';
+import httpRequest from '../database/http-request';
 
 const CardDetails = ({ cardPair, onClose, onIncrease, onDecrease }: {
   cardPair: CardPair; 
@@ -8,8 +9,27 @@ const CardDetails = ({ cardPair, onClose, onIncrease, onDecrease }: {
   onIncrease: (card: CardInfo) => void;
   onDecrease: (card: CardInfo)=>void;
 }) => {
+  const getPackList = async()=>{
+    try{
+      const cardID =  cardPair.cardData.cid;
+      if (cardPair.cardData.cid !=0 ) {
+        const url = `https://yxwdbapi.windoent.com/konami/card/detail?titleId=1&cardId=${cardId}&lang=cn`;
+        const cardData = await httpRequest(url); // 使用提取的 HTTP 请求工具类发起请求
+        if (cardData && cardData.response && cardData.response.packList) {
+            const packs = cardData.response.packList.map((pack: any) => pack.packName);
+            console.log('Pack List:', packs);
+            // setPackList(packs);
+        } else {
+            console.log('No pack list found in card data.');
+        }
+    }
+  }catch(error) {
+    console.error('Error get card pack list data');
+  }
+  };
   useEffect(()=>{
     console.log("card details rendered");
+
   },[cardPair])
   const [newCardId, setNewCardId] = useState('');
   const [newCardRarity, setNewCardRarity] = useState('');

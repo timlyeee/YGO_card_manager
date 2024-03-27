@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, FlatList, TextInput, Button } from 'react-native';
-import { CardInfo, CardPair } from '../database/define';
-import httpRequest from '../database/http-request';
+import { CardInfo, CardPair } from '../define/card';
+import httpRequest from '../service/http-request';
 
 const CardDetails = ({ cardPair, onClose, onIncrease, onDecrease }: {
   cardPair: CardPair; 

@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import CardList from '../cards/card-list';
-import { CardPair } from '../database/define';
-import { database } from '../database/database';
+import { CardPair } from '../define/card';
+import { database } from '../service/database';
 import SearchBar from '../components/search-bar';
 
 const SearchScreen = ({ navigation }) => {
@@ -54,7 +54,7 @@ const SearchScreen = ({ navigation }) => {
         onBlur={handleSearchBlur}
         onSearch={handleSearchCard} />
       {cards && (
-        <CardList cards={cards} setTrigger={triggy}/>
+        <CardList onCardPress={()=>navigation.navigate('CardDetail')} cards={cards}/>
       )}
     </View>
   );

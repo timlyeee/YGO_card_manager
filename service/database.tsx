@@ -1,7 +1,7 @@
 import { Asset, useAssets } from 'expo-asset';
 import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
-import { CardInfo, CardData, CardPair } from './define';
+import { CardInfo, CardData, CardPair } from '../define/card';
 import { listFilesRecursively } from '../utils/file-utils';
 const LOCAL_DB_DIR = `${FileSystem.documentDirectory}SQLite`;
 
@@ -15,6 +15,7 @@ const INVENTORY_TABLE = 'inventory'; // inventory table name in mybank.db
 const DATA_TABLE = 'datas'; // datas table name in mycard.cdb
 const TEXT_TABLE = 'texts';
 class Database {
+// fields
   private static instance: Database | null = null;
   private carddb: SQLite.SQLiteDatabase;
   private bankdb: SQLite.SQLiteDatabase;

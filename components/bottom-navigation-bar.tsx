@@ -5,6 +5,7 @@ import MyBank from '../screens/my-bank';
 import { AntDesign } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import SearchScreen from '../screens/search-screen';
+import CardDetailScreen from '../screens/card-detail-screen';
 const Tab = createBottomTabNavigator();
 
 export const BottomNavigationBar = () => {
@@ -27,6 +28,17 @@ export const BottomNavigationBar = () => {
                         <AntDesign name="user" size={size} color={color} />),
                     headerShown: false }}
             />
+            <Tab.Screen
+                name="CardDetail"
+                component={CardDetailScreen}
+                
+                options={{ 
+                    tabBarStyle:{
+                        height: 0,
+                    },
+                    tabBarShowLabel:false,
+                    tabBarButton:()=>null,
+                    headerShown: false }} />
             <Tab.Screen
                 name="Search"
                 component={SearchScreen}

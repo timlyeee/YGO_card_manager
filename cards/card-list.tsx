@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList,StyleSheet, TouchableOpacity, StyleProp, ViewStyle, Modal } from 'react-native';
-import '../database/define'
-import { CardInfo, CardData, CardPair } from '../database/define';
-import { database } from '../database/database';
+import '../define/card'
+import { CardInfo, CardData, CardPair } from '../define/card';
+import { database } from '../service/database';
 import CardDetails from './card-detail';
-const CardList = ({ setTrigger, cards, listStyle }: {
-  setTrigger: ()=>void;
+import { userCenter } from '../service/user-center';
+const CardList = ({ onCardPress, cards, listStyle }: {
+  onCardPress: ()=>void;
   cards: CardPair[];
   listStyle?: StyleProp<ViewStyle>; // 添加 style prop
   // onPress: (card: CardPair) => void;
@@ -16,7 +17,7 @@ const CardList = ({ setTrigger, cards, listStyle }: {
     console.log("render card list");
     if(selectedCard){
       var card = cards.find((card: CardPair)=>{
-        return card.cardData.id==selectedCard.cardData.id;
+        return card.cardData.id == selectedCard.cardData.id;
       });
       if(card!=null){
         console.log("set selectd card");
@@ -29,7 +30,12 @@ const CardList = ({ setTrigger, cards, listStyle }: {
   const renderCard = ({ item }: { item: CardPair }) => {
     const totalQuantity = item.cards.reduce((acc, card) => acc + card.quantity, 0);
     const handleCardPress = () => {
-      setSelectedCard(item);
+
+      userCenter.currentCard = item;
+      console.log(`userCenter.currentCard is ${userCenter.currentCard}`);
+      // open card detail page
+      onCardPress();
+      // setSelectedCard(item);
     };
     return (
       <TouchableOpacity onPress={handleCardPress}>
@@ -41,24 +47,8 @@ const CardList = ({ setTrigger, cards, listStyle }: {
       </TouchableOpacity>
     );
   }
-  const handleCloseModal = () => {
-    setSelectedCard(null);
-  };
-  const handleIncrease = (card: CardInfo) => {
-    if (selectedCard) {
-      console.log(`cardinfo added ${card}`);
-      database.insertBankCard(card);
-      database.increaseCardQuantity(card, 1);
-      setTrigger();
-    }
-  };
 
-  const handleDecrease = (card: CardInfo) => {
-    if (selectedCard) {
-      database.decreaseCardQuantity(card, 1);
-      setTrigger();
-    }
-  };
+
   return (
     <>
       <FlatList
@@ -68,14 +58,15 @@ const CardList = ({ setTrigger, cards, listStyle }: {
         keyExtractor={(card: CardPair) => card.cardData.id.toString()}
       />
       {/* Modal for displaying card details */}
-      <Modal animationType="slide" transparent={true} visible={selectedCard !== null}>
+      {/* <Modal animationType="slide" transparent={true} visible={selectedCard !== null}>
         <View style={styles.modalContainer}>
-          <CardDetails cardPair={selectedCard || { cardData: { id: 0, name: '', effect: '' }, cards: [] }} 
+          <CardDetails cardPair={selectedCard || { cardData: { id: 0, name: '', effect: '', cid: 0 }, cards: [] }} 
               onClose={handleCloseModal} 
               onIncrease={handleIncrease} 
               onDecrease={handleDecrease} />
         </View>
-      </Modal>
+      </Modal> */}
+
     </>
 
 

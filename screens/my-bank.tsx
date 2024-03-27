@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { Button, FlatList, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import CardList from '../cards/card-list';
-import { CardPair } from '../database/define';
-import { database } from '../database/database';
+import { CardPair } from '../define/card';
+import { database } from '../service/database';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 const MyBank = ({navigation}) => {
 
@@ -39,7 +39,7 @@ const MyBank = ({navigation}) => {
     }}>
 
 
-    <CardList cards={cards} setTrigger={triggy}/>
+    <CardList cards={cards} onCardPress={()=>navigation.navigate('CardDetail')}/>
 
     </View>
   );

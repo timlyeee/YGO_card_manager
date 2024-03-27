@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, FlatList, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import '../database/define';
+import '../define/card';
 
 import SearchNavigate from '../components/search-navigate';
 const Home = ({ navigation }) => {

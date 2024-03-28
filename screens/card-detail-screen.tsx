@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, FlatList, TextInput, Button } from 'react-native';
+import { View, Text,Image, Modal, TouchableOpacity, FlatList, TextInput, Button } from 'react-native';
 import { CardInfo, CardPair } from '../define/card';
 import httpRequest from '../service/http-request';
 import { userCenter } from '../service/user-center';
@@ -15,6 +15,7 @@ const CardDetailScreen = ({ navigation }) => {
     database.increaseCardQuantity(card, 1);
 
   }
+  const [packs, setPacks] = useState<CardInfo[]>([]);
 
 
   const handleDecrease = (card: CardInfo) => {
@@ -23,16 +24,27 @@ const CardDetailScreen = ({ navigation }) => {
   const getPackList = async () => {
     try {
       const cardID = userCenter.currentCard.cardData.cid;
-      if (cardID != 0) {
+      console.log(`cardID ${cardID}`);
+      if (cardID != undefined) {
         const url = `https://yxwdbapi.windoent.com/konami/card/detail?titleId=1&cardId=${cardID}&lang=cn`;
-        const cardData = await httpRequest(url); // 使用提取的 HTTP 请求工具类发起请求
-        if (cardData && cardData.response && cardData.response.packList) {
-          const packs = cardData.response.packList.map((pack: any) => pack.packName);
-          console.log('Pack List:', packs);
-          // setPackList(packs);
-        } else {
-          console.log('No pack list found in card data.');
-        }
+        httpRequest(url).then((data)=>{
+            console.log(`cardID ${cardID}, data.response packList ${data.response.packList}`);
+            const mpacks: CardInfo[] = data.response.packList.map((pack: any) => {
+              const newCard: CardInfo = {
+                id: userCenter.currentCard.cardData.id,
+                rarity: pack.rarityKey,
+                pack: pack.packName,
+                quantity: 0,
+              };
+              return newCard;
+            });
+            setPacks(mpacks);
+
+            console.log('Pack List:', packs);
+            // setPackList(packs);
+          
+        }); // 使用提取的 HTTP 请求工具类发起请求
+        
       }
     } catch (error) {
       console.error('Error get card pack list data');
@@ -40,14 +52,34 @@ const CardDetailScreen = ({ navigation }) => {
   };
   useEffect(() => {
     console.log("card details rendered");
+    getPackList().then(()=>{
 
+    });
   }, [userCenter.currentCard])
 
   const totalQuantity = userCenter.currentCard.cards.reduce((acc, card) => acc + card.quantity, 0);
 
   const renderItem = ({ item }: { item: CardInfo }) => (
     <View>
-      <Text>{`ID: ${item.id}, Rarity: ${item.rarity}, Pack: ${item.pack}, Quantity: ${item.quantity}`}</Text>
+      <View style={{flexDirection: 'row'}}>
+      <Text>{item.pack}</Text>
+      <Text>{item.rarity}</Text>
+      </View>
+      
+      <Button
+        title="Add"
+        onPress={() => {
+          
+          handleIncrease(item);
+        }}
+      />
+      <Text>{item.quantity}</Text>
+      <Button
+        title="Decrease"
+        onPress={() => {
+          handleDecrease(item)
+        }} />
+
     </View>
   );
 
@@ -64,46 +96,38 @@ const CardDetailScreen = ({ navigation }) => {
           borderWidth: 1,
           margin: 8,
           backgroundColor: "white",
-          height: 194
+          height: 194,
+          flexDirection: 'row'
         }}
       >
-        <Text>Name: {userCenter.currentCard.cardData.name}</Text>
-        <Text>ID: {userCenter.currentCard.cardData.id}</Text>
-        <Text>卡片总库存{totalQuantity}</Text>
+        <Image
+          style={{
+            width: 120,
+            height: 174,
+            resizeMode: 'contain',
+            backgroundColor: 'gray'
+          }}
+          
+        />
+        <View style={{
+          flex:1
+        }}>
+          <Text>Name: {userCenter.currentCard.cardData.name}</Text>
+          <Text>ID: {userCenter.currentCard.cardData.id}</Text>
+          <Text>卡片总库存{totalQuantity}</Text>
+        </View>
+
 
       </View>
 
       {/* 显示每一条 CardInfo 数据 */}
       <FlatList
-        data={userCenter.currentCard.cards}
+        data={packs}
         renderItem={renderItem}
         keyExtractor={(item: CardInfo) => `${item.id}-${item.rarity}-${item.pack}`}
       />
 
-      <Button
-        title="Add"
-        onPress={() => {
-          const newCard: CardInfo = {
-            id: userCenter.currentCard.cardData.id,
-            rarity: 0,
-            pack: "0",
-            quantity: 1,
-          };
-          handleIncrease(newCard);
-        }}
-      />
-      <Button
-        title="Decrease"
-        onPress={() => {
-          const newCard: CardInfo = {
-            id: userCenter.currentCard.cardData.id,
-            rarity: 0,
-            pack: "0",
-            quantity: 1,
-          };
-          handleDecrease(newCard)
-        }} />
-
+ 
 
 
     </View>

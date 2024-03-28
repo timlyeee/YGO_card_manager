@@ -113,7 +113,7 @@ class Database {
         tx.executeSql(
           `CREATE TABLE IF NOT EXISTS ${INVENTORY_TABLE} (
             id INTEGER,  
-            rarity INTEGER,
+            rarity TEXT,
             pack TEXT, 
             quantity INTEGER,
             PRIMARY KEY (id, rarity, pack)

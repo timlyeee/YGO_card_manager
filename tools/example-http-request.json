@@ -1,0 +1,232 @@
+{
+    "result": {
+        "code": 200000,
+        "message": "TRUE"
+    },
+    "response": {
+        "cardId": 12950,
+        "lang": "cn",
+        "defaultImageId": 1,
+        "imageIdList": [
+            1,
+            2
+        ],
+        "imageKey": "by_I8OcuAqgJpPjaezbcNg",
+        "cardName": "灰流丽",
+        "cardType": 1,
+        "attributeName": "炎属性",
+        "effectName": "",
+        "speciesName": "不死族",
+        "otherItemNameList": [
+            "协调",
+            "效果"
+        ],
+        "starchip": 3,
+        "linkMarkerCount": null,
+        "penScale": null,
+        "linkMarker": null,
+        "atk": 0,
+        "def": 1800,
+        "cardText": "",
+        "pendulumText": null,
+        "note": null,
+        "otherItemIcon": "card_icon_effect.png",
+        "packList": [
+            {
+                "packId": "3000001302000",
+                "packName": "稀有典藏包 2023 －25周年纪念－",
+                "releaseDate": "2023-11-25 00: 00: 00",
+                "cardNo": "23RC-SC013",
+                "rarity": "金闪稀有",
+                "rarityIcon": "icon_ur.png",
+                "rarityId": 4,
+                "rarityKey": "UR",
+                "charColor": "cfa15e",
+                "backgroundColor": "fff8ee"
+            },
+            {
+                "packId": "3000001302000",
+                "packName": "稀有典藏包 2023 －25周年纪念－",
+                "releaseDate": "2023-11-25 00: 00: 00",
+                "cardNo": "23RC-SC013",
+                "rarity": "银碎稀有",
+                "rarityIcon": "icon_se.png",
+                "rarityId": 5,
+                "rarityKey": "SE",
+                "charColor": "e86d6d",
+                "backgroundColor": "fff4f4"
+            },
+            {
+                "packId": "3000001302000",
+                "packName": "稀有典藏包 2023 －25周年纪念－",
+                "releaseDate": "2023-11-25 00: 00: 00",
+                "cardNo": "23RC-SC013",
+                "rarity": "浮雕稀有",
+                "rarityIcon": "icon_ul.png",
+                "rarityId": 6,
+                "rarityKey": "UL",
+                "charColor": "d87ce6",
+                "backgroundColor": "fff5ff"
+            },
+            {
+                "packId": "3000001302000",
+                "packName": "稀有典藏包 2023 －25周年纪念－",
+                "releaseDate": "2023-11-25 00: 00: 00",
+                "cardNo": "23RC-SC013",
+                "rarity": "全息稀有",
+                "rarityIcon": "icon_hr.png",
+                "rarityId": 7,
+                "rarityKey": "HR",
+                "charColor": "779aad",
+                "backgroundColor": "eef9ff"
+            },
+            {
+                "packId": "3000001302000",
+                "packName": "稀有典藏包 2023 －25周年纪念－",
+                "releaseDate": "2023-11-25 00: 00: 00",
+                "cardNo": "23RC-SC013",
+                "rarity": "斜钻稀有",
+                "rarityIcon": "icon_es.png",
+                "rarityId": 15,
+                "rarityKey": "EXSE",
+                "charColor": "e86d6d",
+                "backgroundColor": "fff4f4"
+            },
+            {
+                "packId": "3000001302000",
+                "packName": "稀有典藏包 2023 －25周年纪念－",
+                "releaseDate": "2023-11-25 00: 00: 00",
+                "cardNo": "23RC-SC013",
+                "rarity": "典藏稀有",
+                "rarityIcon": "icon_cr.png",
+                "rarityId": 16,
+                "rarityKey": "CR",
+                "charColor": "d8b13e",
+                "backgroundColor": "fff9e4"
+            },
+            {
+                "packId": "3000001302000",
+                "packName": "稀有典藏包 2023 －25周年纪念－",
+                "releaseDate": "2023-11-25 00: 00: 00",
+                "cardNo": "23RC-SC013",
+                "rarity": "25周年稀有",
+                "rarityIcon": "",
+                "rarityId": 51,
+                "rarityKey": "QCSE",
+                "charColor": "e86d6d",
+                "backgroundColor": "fff4f4"
+            },
+            {
+                "packId": "3000001256000",
+                "packName": "主题包 ‐不死轮舞‐",
+                "releaseDate": "2023-04-29 00: 00: 00",
+                "cardNo": "TM02-SC097",
+                "rarity": "稀有",
+                "rarityIcon": "icon_r.png",
+                "rarityId": 2,
+                "rarityKey": "R",
+                "charColor": "81c67f",
+                "backgroundColor": "f6fff6"
+            },
+            {
+                "packId": "3000001194000",
+                "packName": "稀有典藏包 2022",
+                "releaseDate": "2022-06-18 00: 00: 00",
+                "cardNo": "22RC-SC009",
+                "rarity": "银碎稀有",
+                "rarityIcon": "icon_se.png",
+                "rarityId": 5,
+                "rarityKey": "SE",
+                "charColor": "e86d6d",
+                "backgroundColor": "fff4f4"
+            },
+            {
+                "packId": "3000001194000",
+                "packName": "稀有典藏包 2022",
+                "releaseDate": "2022-06-18 00: 00: 00",
+                "cardNo": "22RC-SC009",
+                "rarity": "浮雕稀有",
+                "rarityIcon": "icon_ul.png",
+                "rarityId": 6,
+                "rarityKey": "UL",
+                "charColor": "d87ce6",
+                "backgroundColor": "fff5ff"
+            },
+            {
+                "packId": "3000001194000",
+                "packName": "稀有典藏包 2022",
+                "releaseDate": "2022-06-18 00: 00: 00",
+                "cardNo": "22RC-SC009",
+                "rarity": "典藏稀有",
+                "rarityIcon": "icon_cr.png",
+                "rarityId": 16,
+                "rarityKey": "CR",
+                "charColor": "d8b13e",
+                "backgroundColor": "fff9e4"
+            },
+            {
+                "packId": "3000001109000",
+                "packName": "稀有典藏包 高级黄金版",
+                "releaseDate": "2021-01-30 00: 00: 00",
+                "cardNo": "RC03-SC010",
+                "rarity": "金闪稀有",
+                "rarityIcon": "icon_ur.png",
+                "rarityId": 4,
+                "rarityKey": "UR",
+                "charColor": "cfa15e",
+                "backgroundColor": "fff8ee"
+            },
+            {
+                "packId": "3000001109000",
+                "packName": "稀有典藏包 高级黄金版",
+                "releaseDate": "2021-01-30 00: 00: 00",
+                "cardNo": "RC03-SC010",
+                "rarity": "银碎稀有",
+                "rarityIcon": "icon_se.png",
+                "rarityId": 5,
+                "rarityKey": "SE",
+                "charColor": "e86d6d",
+                "backgroundColor": "fff4f4"
+            },
+            {
+                "packId": "3000001109000",
+                "packName": "稀有典藏包 高级黄金版",
+                "releaseDate": "2021-01-30 00: 00: 00",
+                "cardNo": "RC03-SC010",
+                "rarity": "斜钻稀有",
+                "rarityIcon": "icon_es.png",
+                "rarityId": 15,
+                "rarityKey": "EXSE",
+                "charColor": "e86d6d",
+                "backgroundColor": "fff4f4"
+            },
+            {
+                "packId": "3000001109000",
+                "packName": "稀有典藏包 高级黄金版",
+                "releaseDate": "2021-01-30 00: 00: 00",
+                "cardNo": "RC03-SC010",
+                "rarity": "高级黄金稀有",
+                "rarityIcon": "icon_pg.png",
+                "rarityId": 38,
+                "rarityKey": "PG",
+                "charColor": "adae29",
+                "backgroundColor": "ffffc3"
+            },
+            {
+                "packId": "3000000920000",
+                "packName": "主题卡组 转生炎兽",
+                "releaseDate": "2020-10-17 00: 00: 00",
+                "cardNo": "SD35-SC019",
+                "rarity": "普卡",
+                "rarityIcon": "",
+                "rarityId": 1,
+                "rarityKey": "N",
+                "charColor": "9c9c9c",
+                "backgroundColor": "ffffff"
+            }
+        ],
+        "total": 0,
+        "page": 1,
+        "relationCardList": []
+    }
+}

@@ -53,7 +53,7 @@ class Database {
   public async initFileSystem() {
     console.log("Init file system");
     // check local card db
-    // await FileSystem.deleteArsync(CARDS_DB_LOCATION);
+    await FileSystem.deleteAsync(CARDS_DB_LOCATION);
     if (!(await FileSystem.getInfoAsync(LOCAL_DB_DIR)).exists) {
       await FileSystem.makeDirectoryAsync(LOCAL_DB_DIR);
       console.log("Init app sandbox, make database directory success");

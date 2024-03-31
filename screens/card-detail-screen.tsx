@@ -17,7 +17,6 @@ const CardDetailScreen = ({ navigation }) => {
   }
   const [packs, setPacks] = useState<CardInfo[]>([]);
 
-
   const handleDecrease = (card: CardInfo) => {
     database.decreaseCardQuantity(card, 1);
   };
@@ -101,11 +100,12 @@ const CardDetailScreen = ({ navigation }) => {
         }}
       >
         <Image
+          src= {userCenter.currentCard.cardData.imageUrl}
           style={{
             width: 120,
             height: 174,
             resizeMode: 'contain',
-            backgroundColor: 'gray'
+            backgroundColor: 'gray',
           }}
           
         />

@@ -1,3 +1,4 @@
+import { Image, ImageSourcePropType } from "react-native";
 
 
 export class CardInfo {
@@ -17,11 +18,13 @@ export class CardData {
     public name: string;
     public effect: string;
     public cid: number;
-    constructor(id: number, name: string, effect: string, cid: number){
+    public imageUrl : string ;
+    constructor(id: number, name: string, effect: string, cid: number, imageUrl:string ){
         this.id = id;
         this.name = name;
         this.effect = effect;
         this.cid = cid;
+        this.imageUrl = imageUrl;
     }
 }
 

@@ -246,7 +246,8 @@ class Database {
                 id: item.id,
                 name: item.name,
                 effect: item.desc,
-                cid: item.cid
+                cid: item.cid,
+                imageUrl: `https://cdn.233.momobako.com/ygopro/pics/${item.id}.jpg` 
               }));
               const promises: Promise<CardPair>[] = cardData.map((cardDataItem) => {
                 return new Promise<CardPair>((resolveCard, rejectCard) => {
@@ -365,7 +366,7 @@ class Database {
 
   public getCardDataByID(id: number): Promise<CardData> {
     return new Promise((resolve, reject) => {
-      let cardData: CardData = { id: -1, name: 'Unknown', effect: 'Unknown', cid: 0 }; // 默认值
+      let cardData: CardData = { id: -1, name: 'Unknown', effect: 'Unknown', cid: 0, imageUrl: null}; // 默认值
       this.carddb.transaction(
         (tx) => {
           tx.executeSql(
@@ -379,6 +380,7 @@ class Database {
                 cardData.name = item.name;
                 cardData.effect = item.effect;
                 cardData.cid = item.cid;
+                cardData.imageUrl =  `https://cdn.233.momobako.com/ygopro/pics/${item.id}.jpg`;
                 console.log(`search id ${id}, get card id ${cardData.id} with name ${cardData.name}`);
                 resolve(cardData);
               } else {

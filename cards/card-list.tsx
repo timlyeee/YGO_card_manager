@@ -1,41 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList,StyleSheet, TouchableOpacity, StyleProp, ViewStyle, Modal } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, StyleProp, ViewStyle, Modal } from 'react-native';
 import '../define/card'
 import { CardInfo, CardData, CardPair } from '../define/card';
 import { database } from '../service/database';
 import CardDetails from './card-detail';
 import { userCenter } from '../service/user-center';
-const CardList = ({ onCardPress, cards, listStyle }: {
-  onCardPress: ()=>void;
+const CardList = ({ onCardPress, onTrigger, cards, listStyle }: {
+  onCardPress: () => void;
+  onTrigger: () => void;
   cards: CardPair[];
   listStyle?: StyleProp<ViewStyle>; // 添加 style prop
-  // onPress: (card: CardPair) => void;
-  // onIncrement: (id: number) => void;
-  // onDecrement: (id: number) => void;
 }) => {
-  useEffect(()=>{
-    console.log("render card list");
-    if(selectedCard){
-      var card = cards.find((card: CardPair)=>{
-        return card.cardData.id == selectedCard.cardData.id;
-      });
-      if(card!=null){
-        console.log("set selectd card");
-        setSelectedCard(card);
-      }
-    }
-    
-  },[cards])
-  const [selectedCard, setSelectedCard] = useState<CardPair | null>(null);
+
   const renderCard = ({ item }: { item: CardPair }) => {
     const totalQuantity = item.cards.reduce((acc, card) => acc + card.quantity, 0);
     const handleCardPress = () => {
 
       userCenter.currentCard = item;
-      console.log(`userCenter.currentCard is ${userCenter.currentCard}`);
+      console.log(`userCenter.currentCard is ${userCenter.currentCard.cardData.name}`);
       // open card detail page
+      userCenter.trigger = !userCenter.trigger;
+      
+      onTrigger();
       onCardPress();
-      // setSelectedCard(item);
+
     };
     return (
       <TouchableOpacity onPress={handleCardPress}>

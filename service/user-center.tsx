@@ -1,6 +1,8 @@
 import { CardPair } from "../define/card";
 
 class UserCenter {
+
+
     private static instance: UserCenter;
     
     private currentCard_;
@@ -20,7 +22,7 @@ class UserCenter {
     private constructor() {
 
     }
-
+    public trigger: boolean;
     public static getInstance(): UserCenter {
         if (!UserCenter.instance) {
             UserCenter.instance = new UserCenter();

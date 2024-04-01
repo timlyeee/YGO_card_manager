@@ -5,6 +5,7 @@ import CardList from '../cards/card-list';
 import { CardPair } from '../define/card';
 import { database } from '../service/database';
 import SearchBar from '../components/search-bar';
+import { userCenter } from '../service/user-center';
 
 const SearchScreen = ({ navigation }) => {
   const [keyword, setKeyWord] = useState<string>('');
@@ -13,17 +14,17 @@ const SearchScreen = ({ navigation }) => {
   const [isSearchBarFocused, setIsSearchBarFocused] = useState<boolean>(false);
   useEffect(() => {
     //监听trigger和keyword，保证searchlist和当前card的数量显示是一致的。
-    if(database.isOpened){
+    if (database.isOpened) {
       console.log("database is opened");
-      if(keyword!=''){
+      if (keyword != '') {
         database.searchCardData(keyword).then((cards) => {
           setCards(cards);
         });
       }
-      
+
     }
     console.log("use effect when isDirty or keyword changed")
-  }, [keyword, trigger]);  
+  }, [keyword, userCenter.currentCard, trigger]);
 
 
   const goBack = () => {
@@ -39,7 +40,7 @@ const SearchScreen = ({ navigation }) => {
   function handleSearchCard(keyword) {
     setKeyWord(keyword);
   }
-  function triggy(){
+  function triggy() {
     setTrigger(!trigger);
   }
   return (
@@ -54,7 +55,9 @@ const SearchScreen = ({ navigation }) => {
         onBlur={handleSearchBlur}
         onSearch={handleSearchCard} />
       {cards && (
-        <CardList onCardPress={()=>navigation.navigate('CardDetail')} cards={cards}/>
+        <CardList onTrigger={()=>setTrigger(!trigger)} 
+        onCardPress={() => navigation.navigate('CardDetail', {card: userCenter.currentCard})} 
+        cards={cards} />
       )}
     </View>
   );

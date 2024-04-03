@@ -56,7 +56,7 @@ const SearchScreen = ({ navigation }) => {
         onSearch={handleSearchCard} />
       {cards && (
         <CardList onTrigger={()=>setTrigger(!trigger)} 
-        onCardPress={() => navigation.navigate('CardDetail', {card: userCenter.currentCard})} 
+        onCardPress={() => userCenter.navigate(navigation, 'CardDetail', {card: userCenter.currentCard})} 
         cards={cards} />
       )}
     </View>

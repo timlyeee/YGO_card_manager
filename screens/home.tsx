@@ -3,6 +3,7 @@ import { Button, FlatList, StyleSheet, Switch, Text, TextInput, TouchableOpacity
 import '../define/card';
 
 import SearchNavigate from '../components/search-navigate';
+import { userCenter } from '../service/user-center';
 const Home = ({ navigation }) => {
 
 
@@ -30,7 +31,7 @@ const Home = ({ navigation }) => {
         }}>附带游戏王卡组整合器
         </Text>
 
-        <SearchNavigate onPress={() => { navigation.navigate('Search') }}></SearchNavigate>
+        <SearchNavigate onPress={() => { userCenter.navigate(navigation, 'Search') }}></SearchNavigate>
 
 
 

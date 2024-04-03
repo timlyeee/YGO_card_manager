@@ -5,6 +5,7 @@ import CardList from '../cards/card-list';
 import { CardPair } from '../define/card';
 import { database } from '../service/database';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { userCenter } from '../service/user-center';
 const MyBank = ({navigation}) => {
 
 
@@ -39,7 +40,7 @@ const MyBank = ({navigation}) => {
     }}>
 
 
-    <CardList cards={cards} onCardPress={()=>navigation.navigate('CardDetail')}/>
+    <CardList cards={cards} onTrigger={()=>{}} onCardPress={()=>userCenter.navigate(navigation, 'CardDetail', {card: userCenter.currentCard})}/>
 
     </View>
   );

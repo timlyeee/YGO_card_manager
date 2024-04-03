@@ -51,6 +51,8 @@ const CardDetailScreen = ({ route, navigation }) => {
     }
   };
   useEffect(() => {
+    const navState = navigation.state;
+    console.log(navState);
     console.log("card details rendered");
     getPackList().then(() => {
 
@@ -89,7 +91,7 @@ const CardDetailScreen = ({ route, navigation }) => {
 
     <View style={{ marginTop: 43 }}>
       {/* Return bar */}
-      <TitleBar title={card.cardData.name} onBack={() => { navigation.goBack() }} />
+      <TitleBar title={card.cardData.name} onBack={() => { userCenter.goBack(navigation) }} />
       <View
         style={{
           borderColor: 'white',

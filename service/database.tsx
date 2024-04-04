@@ -313,6 +313,7 @@ class Database {
                 const cardInfo = new CardInfo(item.id, item.rarity, item.pack, item.quantity);
 
                 // Collect promises for fetching CardData
+                // TODO: Cache card to user-center
                 cardDataPromises.push(this.getCardDataByID(item.id));
 
                 if (cardsMap.has(item.id)) {
@@ -402,8 +403,34 @@ class Database {
       );
     });
   }
+  public async getCardInfoById(id: number): Promise<CardInfo[]> {
+    return new Promise<CardInfo[]>((resolve, reject) => {
+      this.bankdb.transaction(
+        (tx) => {
+          tx.executeSql(
+            `SELECT * FROM ${INVENTORY_TABLE} WHERE id = ?`,
+            [id],
+            (_, result) => {
+              const cards: CardInfo[] = result.rows._array || [];
+              resolve(cards);
+            },
+            (_, error) => {
+              console.error('Error executing SQL query:', error);
+              reject(error);
+              return false;
+            }
+          );
+        },
+        (error) => {
+          console.error('Error opening database transaction:', error);
+          reject(error);
+        }
+      );
+    });
+  }
+  
 
-
+  
 }
 
 export const database = Database.getInstance();

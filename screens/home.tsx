@@ -4,7 +4,7 @@ import '../define/card';
 
 import SearchNavigate from '../components/search-navigate';
 import { userCenter } from '../service/user-center';
-const Home = ({ navigation }) => {
+const Home = ({ route, navigation }) => {
 
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const Home = ({ navigation }) => {
         }}>附带游戏王卡组整合器
         </Text>
 
-        <SearchNavigate onPress={() => { userCenter.navigate(navigation, 'Search') }}></SearchNavigate>
+        <SearchNavigate onPress={() => { userCenter.navigate(navigation, route, 'Search') }}></SearchNavigate>
 
 
 

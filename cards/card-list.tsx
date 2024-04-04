@@ -17,11 +17,12 @@ const CardList = ({ onCardPress, onTrigger, cards, listStyle }: {
     const handleCardPress = () => {
 
       userCenter.currentCard = item;
+      console.log(`current item : ${item.cardData} + ${item.cards.toString()}`)
       console.log(`userCenter.currentCard is ${userCenter.currentCard.cardData.name}`);
       // open card detail page
       userCenter.trigger = !userCenter.trigger;
-      
-      onTrigger();
+
+      // onTrigger();
       onCardPress();
 
     };
@@ -45,16 +46,6 @@ const CardList = ({ onCardPress, onTrigger, cards, listStyle }: {
         renderItem={renderCard}
         keyExtractor={(card: CardPair) => card.cardData.id.toString()}
       />
-      {/* Modal for displaying card details */}
-      {/* <Modal animationType="slide" transparent={true} visible={selectedCard !== null}>
-        <View style={styles.modalContainer}>
-          <CardDetails cardPair={selectedCard || { cardData: { id: 0, name: '', effect: '', cid: 0 }, cards: [] }} 
-              onClose={handleCloseModal} 
-              onIncrease={handleIncrease} 
-              onDecrease={handleDecrease} />
-        </View>
-      </Modal> */}
-
     </>
 
 

@@ -1,3 +1,4 @@
+
 import { CardPair } from "../define/card";
 
 class UserCenter {
@@ -5,28 +6,21 @@ class UserCenter {
 
     private static instance: UserCenter;
 
-    private currentCard_;
-    public get currentCard(): CardPair {
-        return this.currentCard_;
-    }
-
-    public set currentCard(v: CardPair) {
-        this.currentCard_ = v;
-
-    }
+    public currentCard: CardPair
 
     /// Navigation
     private navigationStack: string[] = new Array<string>;
-    public navigate(navigation: any, screen: string, params?: any) {
-        this.navigationStack.push(screen);
+    public navigate(navigation: any, route: any, screen: string, params?: any) {
+        var currentScreen = route.name;
+        this.navigationStack.push(currentScreen);
         navigation.navigate(screen, params);
     }
-    public goBack(navigation: any) {
+    public goBack(navigation: any, route: any) {
         console.log(`navigation stack ${this.navigationStack}`);
 
-        this.navigationStack.pop();
-        if (this.navigationStack.length > 0) {
-            navigation.navigate(this.navigationStack[this.navigationStack.length - 1]);
+        var lastScreen = this.navigationStack.pop();
+        if (lastScreen != undefined && lastScreen != null) {
+            navigation.navigate(lastScreen);
         } else {
             navigation.goBack();
         }
@@ -36,7 +30,11 @@ class UserCenter {
     private constructor() {
 
     }
-    public trigger: boolean;
+    public trigger: boolean = false;
+    public shoot(){
+        this.trigger = !this.trigger;
+        console.log("shoot!");
+    }
     public static getInstance(): UserCenter {
         if (!UserCenter.instance) {
             UserCenter.instance = new UserCenter();

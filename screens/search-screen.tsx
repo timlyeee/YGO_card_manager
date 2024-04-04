@@ -7,7 +7,7 @@ import { database } from '../service/database';
 import SearchBar from '../components/search-bar';
 import { userCenter } from '../service/user-center';
 
-const SearchScreen = ({ navigation }) => {
+const SearchScreen = ({ route, navigation }) => {
   const [keyword, setKeyWord] = useState<string>('');
   const [cards, setCards] = useState<CardPair[]>([]);
   const [trigger, setTrigger] = useState<boolean>(false);
@@ -56,7 +56,7 @@ const SearchScreen = ({ navigation }) => {
         onSearch={handleSearchCard} />
       {cards && (
         <CardList onTrigger={()=>setTrigger(!trigger)} 
-        onCardPress={() => userCenter.navigate(navigation, 'CardDetail', {card: userCenter.currentCard})} 
+        onCardPress={() => userCenter.navigate(navigation, route, 'CardDetail', {card: userCenter.currentCard})} 
         cards={cards} />
       )}
     </View>

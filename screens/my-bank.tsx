@@ -6,7 +6,7 @@ import { CardPair } from '../define/card';
 import { database } from '../service/database';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { userCenter } from '../service/user-center';
-const MyBank = ({navigation}) => {
+const MyBank = ({route, navigation}) => {
 
 
   const [cards, setCards] = useState<CardPair[]>([]);
@@ -40,7 +40,7 @@ const MyBank = ({navigation}) => {
     }}>
 
 
-    <CardList cards={cards} onTrigger={()=>{}} onCardPress={()=>userCenter.navigate(navigation, 'CardDetail', {card: userCenter.currentCard})}/>
+    <CardList cards={cards} onTrigger={()=>{}} onCardPress={()=>userCenter.navigate(navigation, route, 'CardDetail', {card: userCenter.currentCard})}/>
 
     </View>
   );

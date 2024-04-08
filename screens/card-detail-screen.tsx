@@ -28,6 +28,13 @@ const CardDetailScreen = ({ route, navigation }) => {
   const handleDecrease = (card: CardInfo) => {
     database.decreaseCardQuantity(card, 1);
     setTrigger(!trigger);
+    database.getCardInfoById(userCenter.currentCard.cardData.id).then((cardInfos) => {
+      userCenter.currentCard = {
+        cardData: userCenter.currentCard.cardData,
+        cards: cardInfos
+      }
+
+    });
   };
   const getPackList = async () => {
     try {
@@ -58,6 +65,11 @@ const CardDetailScreen = ({ route, navigation }) => {
           console.log('Pack List:', packs);
           // setPackList(packs);
 
+        }).catch(() => {
+          console.log(`Cannot find card packlist, maybe not published ${cardID}`)
+          setPacks(null);
+        }).finally(() => {
+          console.log(`Finally`);
         }); // 使用提取的 HTTP 请求工具类发起请求
 
       }
@@ -191,13 +203,13 @@ const CardDetailScreen = ({ route, navigation }) => {
         />
         <View style={{
           flex: 1,
-          padding: 12 
+          padding: 12
         }}>
           <Text
-          style={{
-            fontSize: 18,
-            padding: 4
-          }}
+            style={{
+              fontSize: 18,
+              padding: 4
+            }}
           >{userCenter.currentCard.cardData.name}</Text>
           <Text style={{
             fontSize: 14,

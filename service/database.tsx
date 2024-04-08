@@ -15,7 +15,7 @@ const INVENTORY_TABLE = 'inventory'; // inventory table name in mybank.db
 const DATA_TABLE = 'datas'; // datas table name in mycard.cdb
 const TEXT_TABLE = 'texts';
 class Database {
-// fields
+  // fields
   private static instance: Database | null = null;
   private carddb: SQLite.SQLiteDatabase;
   private bankdb: SQLite.SQLiteDatabase;
@@ -215,13 +215,18 @@ class Database {
     this.bankdb.transaction(
       (tx) => {
         tx.executeSql(
-          `UPDATE ${INVENTORY_TABLE} SET quantity = CASE WHEN quantity >= ${num} THEN quantity - ${num} ELSE 0 END WHERE id = ${card.id} AND pack = ${card.pack} AND rarity = ${card.rarity}`,
-          [],
+          `INSERT OR REPLACE INTO ${INVENTORY_TABLE} (id, rarity, pack, quantity) VALUES (?, ?, ?, 
+              CASE WHEN (SELECT quantity FROM ${INVENTORY_TABLE} WHERE id = ? AND pack = ? AND rarity = ?) >= ? THEN 
+                  (SELECT quantity - ? FROM ${INVENTORY_TABLE} WHERE id = ? AND pack = ? AND rarity = ?) 
+              ELSE 
+                  0 
+              END)`,
+          [card.id, card.rarity, card.pack, card.id, card.pack, card.rarity, num, num, card.id, card.pack, card.rarity],
           (_, result) => {
-            console.log('Card quantity incremented successfully');
+            console.log('Card quantity updated successfully');
           },
           (_, error) => {
-            console.error('Error incrementing card quantity:', error);
+            console.error('Error updating card quantity:', error);
             return false;
           });
       },
@@ -230,8 +235,8 @@ class Database {
       },
       () => {
         console.log('Transaction completed successfully');
-      });
-
+      }
+    );
   }
   public async searchCardData(keyword: string): Promise<CardPair[]> {
     return new Promise<CardPair[]>((resolve, reject) => {
@@ -247,7 +252,7 @@ class Database {
                 name: item.name,
                 effect: item.desc,
                 cid: item.cid,
-                imageUrl: `https://cdn.233.momobako.com/ygopro/pics/${item.id}.jpg` 
+                imageUrl: `https://cdn.233.momobako.com/ygopro/pics/${item.id}.jpg`
               }));
               const promises: Promise<CardPair>[] = cardData.map((cardDataItem) => {
                 return new Promise<CardPair>((resolveCard, rejectCard) => {
@@ -367,7 +372,7 @@ class Database {
 
   public getCardDataByID(id: number): Promise<CardData> {
     return new Promise((resolve, reject) => {
-      let cardData: CardData = { id: -1, name: 'Unknown', effect: 'Unknown', cid: 0, imageUrl: null}; // 默认值
+      let cardData: CardData = { id: -1, name: 'Unknown', effect: 'Unknown', cid: 0, imageUrl: null }; // 默认值
       this.carddb.transaction(
         (tx) => {
           tx.executeSql(
@@ -381,7 +386,7 @@ class Database {
                 cardData.name = item.name;
                 cardData.effect = item.effect;
                 cardData.cid = item.cid;
-                cardData.imageUrl =  `https://cdn.233.momobako.com/ygopro/pics/${item.id}.jpg`;
+                cardData.imageUrl = `https://cdn.233.momobako.com/ygopro/pics/${item.id}.jpg`;
                 console.log(`search id ${id}, get card id ${cardData.id} with name ${cardData.name}`);
                 resolve(cardData);
               } else {
@@ -428,9 +433,9 @@ class Database {
       );
     });
   }
-  
 
-  
+
+
 }
 
 export const database = Database.getInstance();

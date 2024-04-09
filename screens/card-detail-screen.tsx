@@ -37,46 +37,58 @@ const CardDetailScreen = ({ route, navigation }) => {
     });
   };
   const getPackList = async () => {
-    try {
-      const cardID = userCenter.currentCard.cardData.cid;
-      console.log(`cardID ${cardID}`);
-      if (cardID != undefined) {
-        const url = `https://yxwdbapi.windoent.com/konami/card/detail?titleId=1&cardId=${cardID}&lang=cn`;
-        httpRequest(url).then((data) => {
-          console.log(`cardID ${cardID}, data.response packList ${data.response.packList}`);
-          const mpacks: CardInfo[] = data.response.packList.map((pack: any) => {
-            var existQuantity = 0;
-            for (const cardInfo of userCenter.currentCard.cards) {
-              if (cardInfo.pack == pack.packName && cardInfo.rarity == pack.rarityKey && cardInfo.id == userCenter.currentCard.cardData.id) {
-                existQuantity = cardInfo.quantity;
-                console.log(`exist quantity ${existQuantity}`);
-              }
-            }
-            const newCard: CardInfo = {
-              id: userCenter.currentCard.cardData.id,
-              rarity: pack.rarityKey,
-              pack: pack.packName,
-              quantity: existQuantity,
-            };
-            return newCard;
-          });
-          setPacks(mpacks);
+    const cardID = userCenter.currentCard.cardData.cid;
+    console.log(`cardID ${cardID}`);
+    if (cardID != undefined) {
+      const url1 = `https://yxwdbapi.windoent.com/konami/card/detail?titleId=1&cardId=${cardID}&lang=cn`;
+      const url2 = `https://yxwdbapi.windoent.com/konami/card/detail?titleId=1&cardId=${cardID}&lang=ja`;
+      const [response1, response2] = await Promise.all([
+        httpRequest(url1),
+        httpRequest(url2)
+      ]);
 
-          console.log('Pack List:', packs);
-          // setPackList(packs);
+      const mpacks1: CardInfo[] = response1.response.packList.map((pack: any) => {
+        var existQuantity = 0;
+        for (const cardInfo of userCenter.currentCard.cards) {
+          if (cardInfo.pack == pack.packName && cardInfo.rarity == pack.rarityKey && cardInfo.id == userCenter.currentCard.cardData.id) {
+            existQuantity = cardInfo.quantity;
+            console.log(`exist quantity ${existQuantity}`);
+          }
+        }
+        const newCard: CardInfo = {
+          id: userCenter.currentCard.cardData.id,
+          rarity: pack.rarityKey,
+          pack: pack.packName,
+          quantity: existQuantity,
+        };
+        return newCard;
+      });
+      const mpacks2: CardInfo[] = response2.response.packList.map((pack: any) => {
+        var existQuantity = 0;
+        for (const cardInfo of userCenter.currentCard.cards) {
+          if (cardInfo.pack == pack.packName && cardInfo.rarity == pack.rarityKey && cardInfo.id == userCenter.currentCard.cardData.id) {
+            existQuantity = cardInfo.quantity;
+            console.log(`exist quantity ${existQuantity}`);
+          }
+        }
+        const newCard: CardInfo = {
+          id: userCenter.currentCard.cardData.id,
+          rarity: pack.rarityKey,
+          pack: pack.packName,
+          quantity: existQuantity,
+        };
+        return newCard;
+      });
+      const mpacks = mpacks1.concat(mpacks2);
+      setPacks(mpacks);
 
-        }).catch(() => {
-          console.log(`Cannot find card packlist, maybe not published ${cardID}`)
-          setPacks(null);
-        }).finally(() => {
-          console.log(`Finally`);
-        }); // 使用提取的 HTTP 请求工具类发起请求
+      console.log('Pack List:', packs);
+      // setPackList(packs);
 
-      }
-    } catch (error) {
-      console.error('Error get card pack list data');
+
     }
-  };
+
+  }
   useEffect(() => {
     getPackList();
     console.log("card details rendered");
@@ -176,7 +188,7 @@ const CardDetailScreen = ({ route, navigation }) => {
   return (
 
 
-    <View style={{ marginTop: 43 }}>
+    <View style={{ marginVertical: 43, marginBottom: 300 }}>
       {/* Return bar */}
       <TitleBar title={userCenter.currentCard.cardData.name} onBack={() => { userCenter.goBack(navigation, route) }} />
       <View

@@ -42,50 +42,51 @@ const CardDetailScreen = ({ route, navigation }) => {
     if (cardID != undefined) {
       const url1 = `https://yxwdbapi.windoent.com/konami/card/detail?titleId=1&cardId=${cardID}&lang=cn`;
       const url2 = `https://yxwdbapi.windoent.com/konami/card/detail?titleId=1&cardId=${cardID}&lang=ja`;
-      const [response1, response2] = await Promise.all([
-        httpRequest(url1),
-        httpRequest(url2)
-      ]);
+      const fetchURL1 = httpRequest(url1);
+      const fetchURL2 = httpRequest(url2);
+      console.log(`fetch url ${fetchURL1} and ${fetchURL2}`);
+      Promise.allSettled([fetchURL1, fetchURL2])
+        .then((results) => {
 
-      const mpacks1: CardInfo[] = response1.response.packList.map((pack: any) => {
-        var existQuantity = 0;
-        for (const cardInfo of userCenter.currentCard.cards) {
-          if (cardInfo.pack == pack.packName && cardInfo.rarity == pack.rarityKey && cardInfo.id == userCenter.currentCard.cardData.id) {
-            existQuantity = cardInfo.quantity;
-            console.log(`exist quantity ${existQuantity}`);
-          }
-        }
-        const newCard: CardInfo = {
-          id: userCenter.currentCard.cardData.id,
-          rarity: pack.rarityKey,
-          pack: pack.packName,
-          quantity: existQuantity,
-        };
-        return newCard;
-      });
-      const mpacks2: CardInfo[] = response2.response.packList.map((pack: any) => {
-        var existQuantity = 0;
-        for (const cardInfo of userCenter.currentCard.cards) {
-          if (cardInfo.pack == pack.packName && cardInfo.rarity == pack.rarityKey && cardInfo.id == userCenter.currentCard.cardData.id) {
-            existQuantity = cardInfo.quantity;
-            console.log(`exist quantity ${existQuantity}`);
-          }
-        }
-        const newCard: CardInfo = {
-          id: userCenter.currentCard.cardData.id,
-          rarity: pack.rarityKey,
-          pack: pack.packName,
-          quantity: existQuantity,
-        };
-        return newCard;
-      });
-      const mpacks = mpacks1.concat(mpacks2);
-      setPacks(mpacks);
+          // 合并 packLists，处理结果
+          const combinedPackList = [];
+          results.forEach(result => {
+            if(result.status == 'fulfilled'){
+              console.log(`fulfilled result ${result.value.response}`);
+              combinedPackList.concat(result.value.response.packList);
+            } else {
+              console.log(`rejects result ${result.reason}`);
+              
+            }
+          });
 
-      console.log('Pack List:', packs);
-      // setPackList(packs);
+          const mpacks: CardInfo[] = combinedPackList.map((pack: any) => {
+            var existQuantity = 0;
+            for (const cardInfo of userCenter.currentCard.cards) {
+              if (cardInfo.pack == pack.packName && cardInfo.rarity == pack.rarityKey && cardInfo.id == userCenter.currentCard.cardData.id) {
+                existQuantity = cardInfo.quantity;
+                console.log(`exist quantity ${existQuantity}`);
+              }
+            }
+            const newCard: CardInfo = {
+              id: userCenter.currentCard.cardData.id,
+              rarity: pack.rarityKey,
+              pack: pack.packName,
+              quantity: existQuantity,
+            };
+            return newCard;
+          });
+          setPacks(mpacks);
+          console.log('fetch urls and set packs');
+        })
+        .catch((error) => {
+          console.error('Error fetching URLs:', error);
+          // 处理错误
+        });
 
 
+      
+      
     }
 
   }

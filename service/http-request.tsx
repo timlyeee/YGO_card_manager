@@ -10,7 +10,7 @@ async function httpRequest(url: string) {
         console.log(`fetch data with url ${url}:  ${data.response.packList.toString()}`);
         return data;
     } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error(`Error fetching data:${error} from url ${url}`);
         return null;
     }
 }

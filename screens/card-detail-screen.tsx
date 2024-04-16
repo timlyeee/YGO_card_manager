@@ -49,16 +49,17 @@ const CardDetailScreen = ({ route, navigation }) => {
         .then((results) => {
 
           // 合并 packLists，处理结果
-          const combinedPackList = [];
-          results.forEach(result => {
+          var combinedPackList = [];
+          for(const result of results){
             if(result.status == 'fulfilled'){
-              console.log(`fulfilled result ${result.value.response}`);
-              combinedPackList.concat(result.value.response.packList);
+              console.log(`fulfilled result ${result.value?.response??'a'}`);
+              combinedPackList = combinedPackList.concat(result.value?.response?.packList??[]);
+              console.log(combinedPackList.toString());
             } else {
               console.log(`rejects result ${result.reason}`);
               
             }
-          });
+          }
 
           const mpacks: CardInfo[] = combinedPackList.map((pack: any) => {
             var existQuantity = 0;

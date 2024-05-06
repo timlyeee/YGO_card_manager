@@ -1,34 +1,39 @@
 import { Image, ImageSourcePropType } from "react-native";
 
-
-export class CardInfo {
+// card total quantity list to quick extract datas
+export class CardTotalQuantity {
     public id: number;
-    public rarity: string;
-    public pack: string;
     public quantity: number;
-    constructor(id, rarity, pack, quantity) {
-        this.id = id;
-        this.rarity = rarity;
-        this.pack = pack;
-        this.quantity = quantity;
-    }
 }
+// card occupation
+export class CardOccupation {
+    public pid: string;
+    public deck: number;
+    public count: number;// how many card in this deck.
+}
+// card info
+export class CardInfo {
+    constructor(
+        public pidv: string,
+        public cardNo: string,
+        public id: number,
+        public rarity: string,
+        public packId: number,
+        public packName: string,
+        public quantity: number) { }
+}
+// card data
 export class CardData {
-    public id: number;
-    public name: string;
-    public effect: string;
-    public cid: number;
-    public imageUrl : string ;
-    constructor(id: number, name: string, effect: string, cid: number, imageUrl:string ){
-        this.id = id;
-        this.name = name;
-        this.effect = effect;
-        this.cid = cid;
-        this.imageUrl = imageUrl;
-    }
+
+    constructor(
+        public id: number,
+        public name: string,
+        public effect: string,
+        public cid: number,
+        public imageUrl: string) { }
 }
 
 export type CardPair = {
     cardData: CardData,
-    cards: CardInfo[]
+    cards: Map<string, CardInfo>,
 };

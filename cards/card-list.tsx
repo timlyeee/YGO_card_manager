@@ -3,7 +3,6 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, StyleProp, ViewStyl
 import '../define/card'
 import { CardInfo, CardData, CardPair } from '../define/card';
 import { database } from '../service/database';
-import CardDetails from './card-detail';
 import { userCenter } from '../service/user-center';
 const CardList = ({ onCardPress, onTrigger, cards, listStyle }: {
   onCardPress: () => void;

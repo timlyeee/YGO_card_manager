@@ -90,24 +90,6 @@ class Database {
     }
 
     this.bankdb = SQLite.openDatabase(BANK_DB);
-    // this.bankdb.transaction(
-    //   (tx) => {
-    //     tx.executeSql(
-    //       'DROP TABLE IF EXISTS inventory',
-    //       [],
-    //       (_, result) => {
-    //         console.log('Table dropped successfully');
-    //       },
-    //       (_, error) => {
-    //         console.error('Error dropping table:', error);
-    //         return false;
-    //       }
-    //     );
-    //   },
-    //   (error) => {
-    //     console.error('Transaction error:', error);
-    //   }
-    // );
     this.bankdb.transaction(
       (tx) => {
         tx.executeSql(
@@ -210,7 +192,12 @@ class Database {
       });
 
   }
-
+  public async updateCardInfo(cardInfo: CardInfo) {
+    // TOOD
+  }
+  public async updateCardData(cardData: CardData) {
+    // TODO
+  }
   public async decreaseCardQuantity(card: CardInfo, num: number) {
     this.bankdb.transaction(
       (tx) => {
@@ -262,8 +249,18 @@ class Database {
                         `SELECT * FROM ${INVENTORY_TABLE} WHERE id = ?`,
                         [cardDataItem.id],
                         (_, resultBank) => {
-                          const cards: CardInfo[] = resultBank.rows._array || [];
-                          resolveCard({ cardData: cardDataItem, cards: cards });
+
+                          const cards: Map<string, CardInfo> = new Map();
+                          if (resultBank.rows._array) {
+                            resultBank.rows._array.forEach((cardInfo) => {
+                              cards[cardInfo.pidv] = cardInfo;
+                            });
+                          }
+
+                          resolveCard({
+                            cardData: cardDataItem, cards: cards
+                          }
+                          );
                         },
                         (_, errorBank) => {
                           rejectCard(errorBank);
@@ -301,70 +298,39 @@ class Database {
       );
     });
   }
-  public async fetchMyBankData(): Promise<CardPair[]> {
-    return new Promise<CardPair[]>((resolve, reject) => {
-      console.log(`fetch my bank data`);
+  public async fetchMyBankData(): Promise<CardInfo[]> {
+    return new Promise<CardInfo[]>((resolve, reject) => {
+
       this.bankdb.transaction(
         (tx) => {
           tx.executeSql(
             `SELECT * FROM ${INVENTORY_TABLE} WHERE quantity > 0`,
             [],
             async (_, result) => {
-              const cardsMap = new Map<number, CardPair>(); // id to card pair
-              const cardDataPromises: Promise<CardData>[] = [];
-
+              const ret = [];
+              // directly update card infos;
               for (let i = 0; i < result.rows.length; i++) {
                 const item = result.rows.item(i);
-                const cardInfo = new CardInfo(item.id, item.rarity, item.pack, item.quantity);
-
-                // Collect promises for fetching CardData
-                // TODO: Cache card to user-center
-                cardDataPromises.push(this.getCardDataByID(item.id));
-
-                if (cardsMap.has(item.id)) {
-                  // If the id already exists in the map, update the existing entry
-                  const existingEntry = cardsMap.get(item.id);
-                  existingEntry.cards.push(cardInfo);
-                } else {
-                  // If the id is not present, create a new entry
-                  const newEntry: CardPair = { cardData: null, cards: [cardInfo] };
-                  cardsMap.set(item.id, newEntry);
-                }
+                const cardInfo = new CardInfo(
+                  item.pidv,
+                  item.pid,
+                  item.id,
+                  item.rarity,
+                  item.pack,
+                  item.quantity);
+                ret.push(cardInfo);
               }
-
-              try {
-                // Wait for all CardData promises to resolve
-                const cardDataList = await Promise.all(cardDataPromises);
-
-                // Update CardData in the cardsMap
-                cardDataList.forEach((cardData, index) => {
-                  const itemId = result.rows.item(index).id;
-                  const entry = cardsMap.get(itemId);
-                  if (entry) {
-                    entry.cardData = cardData;
-                  }
-                });
-
-                // Filter out entries with total quantity <= 0
-                const filteredData = Array.from(cardsMap.values()).filter(
-                  (entry) => entry.cards.reduce((total, card) => total + card.quantity, 0) > 0
-                );
-
-                resolve(filteredData);
-              } catch (error) {
-                console.error('Error fetching CardData', error);
-                reject(error);
-              }
+              resolve(ret);
             },
             (_, error) => {
-              console.error('Error fetching my bank data', error);
+              console.error('[Database][fetchMyBankData] Error fetching my bank data', error);
               reject(error);
               return false;
             }
           );
         },
         (error) => {
-          console.error('Transaction error', error);
+          console.error('[Database][fetchMyBankData] Transaction error', error);
         }
       );
     });
@@ -408,7 +374,7 @@ class Database {
       );
     });
   }
-  public async getCardInfoById(id: number): Promise<CardInfo[]> {
+  public async getCardInfoByID(id: number): Promise<CardInfo[]> {
     return new Promise<CardInfo[]>((resolve, reject) => {
       this.bankdb.transaction(
         (tx) => {

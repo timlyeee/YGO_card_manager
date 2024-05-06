@@ -14,7 +14,7 @@ const CardDetailScreen = ({ route, navigation }) => {
 
     database.increaseCardQuantity(card, 1);
     setTrigger(!trigger);
-    database.getCardInfoById(userCenter.currentCard.cardData.id).then((cardInfos) => {
+    database.getCardInfoByID(userCenter.getCardPair(userCenter.currentCard)).then((cardInfos) => {
       userCenter.currentCard = {
         cardData: userCenter.currentCard.cardData,
         cards: cardInfos
@@ -28,7 +28,7 @@ const CardDetailScreen = ({ route, navigation }) => {
   const handleDecrease = (card: CardInfo) => {
     database.decreaseCardQuantity(card, 1);
     setTrigger(!trigger);
-    database.getCardInfoById(userCenter.currentCard.cardData.id).then((cardInfos) => {
+    database.getCardInfoByID(userCenter.currentCard.cardData.id).then((cardInfos) => {
       userCenter.currentCard = {
         cardData: userCenter.currentCard.cardData,
         cards: cardInfos

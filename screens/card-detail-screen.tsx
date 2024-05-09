@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, Modal, TouchableOpacity, FlatList, TextInput, Button } from 'react-native';
-import { CardInfo, CardPair } from '../define/card';
+import { CardData, CardInfo, CardPair } from '../define/card';
 import httpRequest from '../service/http-request';
 import { userCenter } from '../service/user-center';
 import { database } from '../service/database';
@@ -8,96 +8,27 @@ import TitleBar from '../components/title-bar';
 import { AntDesign } from '@expo/vector-icons';
 const CardDetailScreen = ({ route, navigation }) => {
   const [trigger, setTrigger] = useState<boolean>(false);
-  const handleIncrease = (card: CardInfo) => {
-
-    database.insertBankCard(card);
-
-    database.increaseCardQuantity(card, 1);
-    setTrigger(!trigger);
-    database.getCardInfoByID(userCenter.getCardPair(userCenter.currentCard)).then((cardInfos) => {
-      userCenter.currentCard = {
-        cardData: userCenter.currentCard.cardData,
-        cards: cardInfos
-      }
-
-    });
-
-  }
   const [packs, setPacks] = useState<CardInfo[]>([]);
-
-  const handleDecrease = (card: CardInfo) => {
-    database.decreaseCardQuantity(card, 1);
+  const [cardData, setCardData] = useState<CardData>();
+  const [totalQuantity, setTotalQuantity] = useState<number>();
+  const handleIncrease = (cardInfo: CardInfo, added: number) => {
+    userCenter.increaseCardQuantity(userCenter.currentCard, cardInfo, added);
     setTrigger(!trigger);
-    database.getCardInfoByID(userCenter.currentCard.cardData.id).then((cardInfos) => {
-      userCenter.currentCard = {
-        cardData: userCenter.currentCard.cardData,
-        cards: cardInfos
-      }
-
-    });
-  };
-  const getPackList = async () => {
-    const cardID = userCenter.currentCard.cardData.cid;
-    console.log(`cardID ${cardID}`);
-    if (cardID != undefined) {
-      const url1 = `https://yxwdbapi.windoent.com/konami/card/detail?titleId=1&cardId=${cardID}&lang=cn`;
-      const url2 = `https://yxwdbapi.windoent.com/konami/card/detail?titleId=1&cardId=${cardID}&lang=ja`;
-      const fetchURL1 = httpRequest(url1);
-      const fetchURL2 = httpRequest(url2);
-      console.log(`fetch url ${fetchURL1} and ${fetchURL2}`);
-      Promise.allSettled([fetchURL1, fetchURL2])
-        .then((results) => {
-
-          // 合并 packLists，处理结果
-          var combinedPackList = [];
-          for(const result of results){
-            if(result.status == 'fulfilled'){
-              console.log(`fulfilled result ${result.value?.response??'a'}`);
-              combinedPackList = combinedPackList.concat(result.value?.response?.packList??[]);
-              console.log(combinedPackList.toString());
-            } else {
-              console.log(`rejects result ${result.reason}`);
-              
-            }
-          }
-
-          const mpacks: CardInfo[] = combinedPackList.map((pack: any) => {
-            var existQuantity = 0;
-            for (const cardInfo of userCenter.currentCard.cards) {
-              if (cardInfo.pack == pack.packName && cardInfo.rarity == pack.rarityKey && cardInfo.id == userCenter.currentCard.cardData.id) {
-                existQuantity = cardInfo.quantity;
-                console.log(`exist quantity ${existQuantity}`);
-              }
-            }
-            const newCard: CardInfo = {
-              id: userCenter.currentCard.cardData.id,
-              rarity: pack.rarityKey,
-              pack: pack.packName,
-              quantity: existQuantity,
-            };
-            return newCard;
-          });
-          setPacks(mpacks);
-          console.log('fetch urls and set packs');
-        })
-        .catch((error) => {
-          console.error('Error fetching URLs:', error);
-          // 处理错误
-        });
-
-
-      
-      
-    }
-
   }
+
+  const handleDecrease = (cardInfo: CardInfo, minus: number) => {
+    userCenter.decreaseCardQuantity(userCenter.currentCard, cardInfo, 1);
+    setTrigger(!trigger);
+  };
+
   useEffect(() => {
-    getPackList();
+    setPacks(Array.from(userCenter.getCardPair(userCenter.currentCard).cards.values()));
+    setCardData(userCenter.getCardPair(userCenter.currentCard).cardData);
+    setTotalQuantity(packs.reduce((acc, card) => acc + card.quantity, 0));
     console.log("card details rendered");
   }, [trigger, userCenter.currentCard]);
-  // 使用 useFocusEffect 在页面获得焦点时触发
 
-  const totalQuantity = userCenter.currentCard.cards.reduce((acc, card) => acc + card.quantity, 0);
+  
 
   const renderItem = ({ item }: { item: CardInfo }) => {
 
@@ -112,7 +43,7 @@ const CardDetailScreen = ({ route, navigation }) => {
           justifyContent: 'space-between'
 
         }}>
-          <Text>{item.pack}</Text>
+          <Text>{item.packName}</Text>
           <Text>{item.rarity}</Text>
         </View>
         <View style={{
@@ -145,7 +76,7 @@ const CardDetailScreen = ({ route, navigation }) => {
                 justifyContent: 'center'
               }}
               onPress={() => {
-                handleIncrease(item);
+                handleIncrease(item, 1);
               }}>
               <AntDesign name="plus" size={16} color="black" />
             </TouchableOpacity>
@@ -174,7 +105,7 @@ const CardDetailScreen = ({ route, navigation }) => {
                 justifyContent: 'center'
               }}
               onPress={() => {
-                handleDecrease(item)
+                handleDecrease(item, 1)
               }}>
               <AntDesign name="minus" size={16} color="black" />
 
@@ -192,7 +123,7 @@ const CardDetailScreen = ({ route, navigation }) => {
 
     <View style={{ marginVertical: 43, marginBottom: 300 }}>
       {/* Return bar */}
-      <TitleBar title={userCenter.currentCard.cardData.name} onBack={() => { userCenter.goBack(navigation, route) }} />
+      <TitleBar title={cardData.name} onBack={() => { userCenter.goBack(navigation, route) }} />
       <View
         style={{
           borderColor: 'white',
@@ -205,7 +136,7 @@ const CardDetailScreen = ({ route, navigation }) => {
         }}
       >
         <Image
-          src={userCenter.currentCard.cardData.imageUrl}
+          src={cardData.imageUrl}
           style={{
             padding: 8,
             width: 120,
@@ -224,12 +155,12 @@ const CardDetailScreen = ({ route, navigation }) => {
               fontSize: 18,
               padding: 4
             }}
-          >{userCenter.currentCard.cardData.name}</Text>
+          >{cardData.name}</Text>
           <Text style={{
             fontSize: 14,
             fontWeight: '300',
             padding: 4
-          }}>{userCenter.currentCard.cardData.id}</Text>
+          }}>{cardData.id}</Text>
           <Text style={{
             fontSize: 12,
             padding: 4
@@ -243,7 +174,7 @@ const CardDetailScreen = ({ route, navigation }) => {
       <FlatList
         data={packs}
         renderItem={renderItem}
-        keyExtractor={(item: CardInfo) => `${item.id}-${item.rarity}-${item.pack}`}
+        keyExtractor={(item: CardInfo) => `${item.id}-${item.rarity}-${item.packId}`}
       />
     </View>
 

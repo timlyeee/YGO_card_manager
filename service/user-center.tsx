@@ -123,10 +123,10 @@ class UserCenter {
 
                         }
                     }
-
+                    // if card is not found, insert cardinfo to dictionary
                     combinedPackList.forEach((pack) => {
                         // right now, it's only consist of three params
-                        var pidv = pack.cardNo + '-' + pack.rarityKey + '-' + pack.packId;
+                        var pidv = UserCenter.getpidv(pack.cardNo, pack.rarityKey, pack.packId);
                         if (!cardPairCache.cards.has(pidv)) {
                             const cardInfo = new CardInfo(
                                 pidv,
@@ -137,28 +137,11 @@ class UserCenter {
                                 pack.packName,
                                 0 // by default
                             )
-                            
+                            cardPairCache.cards[pidv] = cardInfo;
+                            // update card info to database
+                            this.updateCardInfo(id, cardInfo);
                         }
                     })
-
-                    const mpacks: CardInfo[] = combinedPackList.map((pack: any) => {
-                        var existQuantity = 0;
-                        for (const cardInfo of userCenter.currentCard.cards) {
-                            if (cardInfo.pack == pack.packName && cardInfo.rarity == pack.rarityKey && cardInfo.id == userCenter.currentCard.cardData.id) {
-                                existQuantity = cardInfo.quantity;
-                                console.log(`exist quantity ${existQuantity}`);
-                            }
-                        }
-                        const newCard: CardInfo = {
-                            id: userCenter.currentCard.cardData.id,
-                            rarity: pack.rarityKey,
-                            pack: pack.packName,
-                            quantity: existQuantity,
-                        };
-                        return newCard;
-                    });
-                    setPacks(mpacks);
-                    console.log('fetch urls and set packs');
                 })
                 .catch((error) => {
                     console.error('Error fetching URLs:', error);
@@ -230,6 +213,9 @@ class UserCenter {
             UserCenter.instance = new UserCenter();
         }
         return UserCenter.instance;
+    }
+    public static getpidv(cardNo: string, rarityKey: string, packID: number): string{
+        return cardNo + '-' + rarityKey + '-' + packID;
     }
 }
 

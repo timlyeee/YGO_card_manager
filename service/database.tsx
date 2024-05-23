@@ -146,7 +146,7 @@ class Database {
    * Insert card with card_id, pack_number, rarity
    *  */
   public async insertBankCard(card: CardInfo) {
-    this.bankdb.transaction((tx) => {
+    await this.bankdb.transaction((tx) => {
       tx.executeSql(
         `INSERT INTO ${INVENTORY_TABLE} (id, rarity,pack, quantity) 
         VALUES (?, ?, ?, ?) 
